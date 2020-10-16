@@ -1,0 +1,5 @@
+{
+    "extension" : ["ts"],
+    "spec" : "test",
+    "require" : "register-mocha-requires.js"
+}
