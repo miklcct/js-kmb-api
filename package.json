@@ -1,7 +1,7 @@
 {
     "name": "js-kmb-api",
     "description": "Library for querying KMB data",
-    "version": "2.0.0-beta.1",
+    "version": "2.0.0-beta.3",
     "type": "module",
     "main": "dist/src/index.js",
     "types": "dist/src/index.d.ts",
@@ -38,7 +38,7 @@
     "scripts": {
         "build": "tsc",
         "test": "mocha",
-        "clean" : "rm -fr dist",
-        "prepack" : "npm run clean && npm run build && npm run test"
+        "clean": "rm -fr dist",
+        "prepack": "npm run clean && npm run build && npm run test"
     }
 }
