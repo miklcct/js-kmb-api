@@ -14,7 +14,7 @@ export default class IncompleteStop {
         return this.id.split('-')[1];
     }
 
-    get name() : string {
+    get name() : string | null {
         return localStorage[`${this.id}_${Common.getLanguage()}`] ?? null;
     }
 }

@@ -7,6 +7,7 @@ import Route from "../src/Route";
 import Variant from "../src/Variant";
 import Stop from "../src/Stop";
 import StopRoute from "../src/StopRoute";
+import IncompleteStop from "../src/IncompleteStop";
 
 @suite
 export class StopRouteTest extends TestCase {
@@ -33,6 +34,30 @@ export class StopRouteTest extends TestCase {
             }
         }
         , 'simple case'
+    )
+    @params(
+        {
+            data: {
+                '1A': {
+                    1: {
+                        1: {
+                            0: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                        },
+                    },
+                },
+            },
+            input: new IncompleteStop('YY88-Y-8888-8'),
+            expected: {
+                '1A-1' : [
+                    new StopRoute(
+                        new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                        , 0
+                    ),
+                ],
+            }
+        }
+        , 'simple case with incomplete stop'
     )
     @params(
         {
@@ -371,5 +396,26 @@ export class StopRouteTest extends TestCase {
             JSON.parse(sessionStorage.getItem(`${input.id}_${Common.getLanguage()}`) ?? '')
             , JSON.parse(JSON.stringify(expected))
         );
+    }
+
+    @test
+    async getStopRouteListFromCache(): Promise<void> {
+        const expected = {
+            '1A-1': [
+                new StopRoute(
+                    new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                    , new Variant(new Route('1A', 1), 1, '', '', '')
+                    , 0
+                ),
+            ],
+        };
+        sessionStorage.setItem(
+            `YY88-Y-8888-8_${Common.getLanguage()}`
+            , JSON.stringify(expected)
+        );
+        const spy = Sinon.spy(Common, 'callApi');
+        const result = await StopRoute.get(new IncompleteStop('YY88-Y-8888-8'));
+        assert(spy.notCalled);
+        assert.deepStrictEqual(result, expected);
     }
 }

@@ -7,7 +7,7 @@ import Route from "./Route";
 import IncompleteStop from "./IncompleteStop";
 
 type StopRouteCacheType = {
-    stop: { id: string, name: string, direction: string, sequence: number },
+    stop: { id: string, routeDirection: string, sequence: number },
     variant: {
         route: { number: string, bound: number },
         serviceType: number,
@@ -40,17 +40,23 @@ export default class StopRoute {
             (Object.entries(result) as [string, StopRouteCacheType][]).forEach(
                 ([key, value]) => {
                     result[key] = value.map(
-                        item => new StopRoute(
-                            new Stop(item.stop.id, item.stop.name, item.stop.direction, item.stop.sequence)
-                            , new Variant(
-                                new Route(item.variant.route.number, item.variant.route.bound)
-                                , item.variant.serviceType
-                                , item.variant.origin
-                                , item.variant.destination
-                                , item.variant.description
-                            )
-                            , item.sequence
-                        )
+                        item => {
+                            const name = new IncompleteStop(item.stop.id).name;
+                            if (name === null) {
+                                throw new Error('Attempting to load StopRoute cache but stop name can\'t be found');
+                            }
+                            return new StopRoute(
+                                new Stop(item.stop.id, name, item.stop.routeDirection, item.stop.sequence)
+                                , new Variant(
+                                    new Route(item.variant.route.number, item.variant.route.bound)
+                                    , item.variant.serviceType
+                                    , item.variant.origin
+                                    , item.variant.destination
+                                    , item.variant.description
+                                )
+                                , item.sequence
+                            );
+                        }
                     );
                 }
             );
