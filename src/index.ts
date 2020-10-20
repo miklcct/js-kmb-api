@@ -3,6 +3,13 @@ import {StopRouteCacheType} from "./StopRouteCacheType";
 import Secret from "./Secret";
 import Axios from "axios";
 
+type IncompleteStop = InstanceType<Kmb['IncompleteStop']>;
+type Route = InstanceType<Kmb['Route']>;
+type Variant = InstanceType<Kmb['Variant']>;
+type Stop = InstanceType<Kmb['Stop']>;
+type StopRoute = InstanceType<Kmb['StopRoute']>;
+type Eta = InstanceType<Kmb['Eta']>;
+
 export default class Kmb {
     public proxyUrl = 'https://miklcct.com/proxy/';
     public apiEndpoint = 'https://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx';
@@ -44,7 +51,7 @@ export default class Kmb {
              * Get the list of route variants serving a particular stop
              * @param update_count Specify this to update the progress of how many routes are remaining
              */
-            async getStopRoutes(update_count?: (remaining: number) => void): Promise<InstanceType<Kmb["StopRoute"]>[]> {
+            async getStopRoutes(update_count?: (remaining: number) => void): Promise<StopRoute[]> {
                 const cached = stopRouteStorage?.getItem(`${this.id}_${kmb.language}`) ?? null;
                 if (cached !== null) {
                     const result: StopRouteCacheType = JSON.parse(cached);
@@ -74,7 +81,7 @@ export default class Kmb {
                             bsiCode: this.id
                         }
                     ) as { data: string[] };
-                    const map = new Map<InstanceType<Kmb["Route"]>, InstanceType<Kmb["StopRoute"]>[]>();
+                    const map = new Map<Route, StopRoute[]>();
                     let remaining_routes = json.data.length;
                     if (update_count !== undefined) {
                         update_count(remaining_routes);
@@ -106,7 +113,7 @@ export default class Kmb {
                                                                         existing === undefined
                                                                         || variant.serviceType < existing[0].variant.serviceType
                                                                         ? (() => {
-                                                                            const empty : InstanceType<Kmb["StopRoute"]>[] = [];
+                                                                            const empty : StopRoute[] = [];
                                                                             map.set(variant.route, empty);
                                                                             return empty;
                                                                         })()
@@ -158,7 +165,7 @@ export default class Kmb {
             /**
              * Get the list of variants from a route
              */
-            public async getVariants(): Promise<InstanceType<Kmb["Variant"]>[]> {
+            public async getVariants(): Promise<Variant[]> {
                 const json = await kmb.callApi(
                     {
                         action: 'getSpecialRoute',
@@ -207,7 +214,7 @@ export default class Kmb {
                 );
             }
 
-            public static compare(a: InstanceType<Kmb["Route"]>, b: InstanceType<Kmb["Route"]>): -1 | 0 | 1 {
+            public static compare(a: Route, b: Route): -1 | 0 | 1 {
                 const compare_route_number = (a: string, b: string) => {
                     const explode_segments = (route_id: string) => {
                         const segments: string[] = [];
@@ -277,7 +284,7 @@ export default class Kmb {
              * @param destination
              * @param description The description of the variant, e.g. "Normal routeing"
              */
-            constructor(route : InstanceType<Kmb["Route"]>, serviceType : number, origin : string, destination : string, description : string) {
+            constructor(route : Route, serviceType : number, origin : string, destination : string, description : string) {
                 this.route = route;
                 this.serviceType = serviceType;
                 this.origin = origin;
@@ -289,7 +296,7 @@ export default class Kmb {
                 return `${this.origin} → ${this.destination}`;
             }
 
-            public async getStops() : Promise<InstanceType<Kmb["Stop"]>[]> {
+            public async getStops() : Promise<Stop[]> {
                 const json = await kmb.callApi(
                     {
                         action: 'getstops',
@@ -339,13 +346,13 @@ export default class Kmb {
             public readonly stop;
             public readonly variant;
             public readonly sequence : number;
-            public constructor(stop : InstanceType<Kmb["Stop"]>, variant: InstanceType<Kmb["Variant"]>, sequence: number) {
+            public constructor(stop : Stop, variant: Variant, sequence: number) {
                 this.stop = stop;
                 this.variant = variant;
                 this.sequence = sequence;
             }
 
-            async getEtas(retry_count = 5) : Promise<InstanceType<Kmb["Eta"]>[]> {
+            async getEtas(retry_count = 5) : Promise<Eta[]> {
                 const secret = Secret.getSecret(`${new Date().toISOString().split('.')[0]}Z`);
                 const languages = {'en': 'en', 'zh-hans': 'sc', 'zh-hant': 'tc'};
                 const query = {
@@ -430,7 +437,7 @@ export default class Kmb {
              * @param remark The remark of the ETA (e.g. KMB/NWFB, Scheduled)
              * @param realTime If the ETA is real-time
              */
-            public constructor(stopRoute : InstanceType<Kmb["StopRoute"]>, time : Date, distance : number | undefined, remark : string, realTime : boolean) {
+            public constructor(stopRoute : StopRoute, time : Date, distance : number | undefined, remark : string, realTime : boolean) {
                 this.stopRoute = stopRoute;
                 this.time = time;
                 this.distance = distance;
@@ -441,14 +448,14 @@ export default class Kmb {
             /**
              * Compare two ETA entries by time
              */
-            public static compare(a : InstanceType<Kmb["Eta"]>, b : InstanceType<Kmb["Eta"]>) : number {
+            public static compare(a : Eta, b : Eta) : number {
                 return a.time.getTime() - b.time.getTime();
             }
 
         };
     }
 
-    public async getRoutes(route_number: string): Promise<InstanceType<Kmb["Route"]>[]> {
+    public async getRoutes(route_number: string): Promise<Route[]> {
         const json = await this.callApi(
             {
                 action: 'getroutebound',
@@ -469,4 +476,4 @@ export default class Kmb {
     }
 }
 
-export {Language};
+export {Language, IncompleteStop, Stop, Route, Variant, StopRoute, Eta};
