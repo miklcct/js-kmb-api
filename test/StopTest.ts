@@ -119,9 +119,9 @@ export class StopTest extends TestCase {
             "result": true
         };
         const kmb = new Kmb(language);
-        const api_stub = Sinon.stub(kmb, 'callApi').withArgs({action: 'getstops', route: '71B', bound: '1', serviceType: '1'}).returns(Promise.resolve(json));
-        const stops = await kmb.Stop.get(new kmb.Variant(new kmb.Route('71B', 1), 1, '大埔(富亨)', '大埔中心(循環線)', ''));
-        assert(api_stub.calledOnce);
+        const api_stub = Sinon.stub(kmb, 'callApi').returns(Promise.resolve(json));
+        const stops = await new kmb.Variant(new kmb.Route('71B', 1), 1, '大埔(富亨)', '大埔中心(循環線)', '').getStops();
+        assert(api_stub.calledWithExactly({action: 'getstops', route: '71B', bound: '1', serviceType: '1'}));
         assert.deepStrictEqual(
             json.data.routeStops.map(
                 item => new kmb.Stop(item.BSICode, item[column as keyof typeof item], item.Direction.trim(), Number(item.Seq))

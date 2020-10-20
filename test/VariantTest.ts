@@ -2,7 +2,8 @@ import {TestCase} from "./TestCase";
 import {params, suite, test} from '@testdeck/mocha';
 import {assert} from 'chai';
 import Sinon from "sinon";
-import Kmb, {Language} from "../src";
+import Kmb from "../src";
+import StopRoute from "../src/StopRoute";
 
 @suite
 export class VariantTest extends TestCase {
@@ -21,106 +22,392 @@ export class VariantTest extends TestCase {
         );
     }
 
-    @params(['en', 'ENG'], 'get English variant list')
-    @params(['zh-hant', 'CHI'], 'get traditional Chinese variant list')
-    @params(['zh-hans', 'CHI'], 'get simplified Chinese variant list')
+    @params(
+        {
+            data: {
+                '1A': {
+                    1: {
+                        1: {
+                            0: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                        },
+                    },
+                },
+            },
+            input: {id : 'YY88-Y-8888-8', name : 'This stop'},
+            expected: [
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
+                    , 0
+                ),
+            ],
+        }
+        , 'simple case'
+    )
+    @params(
+        {
+            data: {
+                '1A': {
+                    1: {
+                        1: {
+                            0: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                        },
+                    },
+                },
+            },
+            input: {id : 'YY88-Y-8888-8'},
+            expected: [
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
+                    , 0
+                ),
+            ],
+        }
+        , 'simple case with incomplete stop'
+    )
+    @params(
+        {
+            data: {
+                '1A': {
+                    1: {
+                        1: {
+                            0: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                            1: {id: 'YY88-Y-8899-8', name: 'Another stop'},
+                        },
+                    },
+                },
+            },
+            input: {id : 'YY88-Y-8888-8', name : 'This stop'},
+            expected: [
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
+                    , 0
+                ),
+            ],
+        }
+        , 'different stops on same street'
+    )
+    @params(
+        {
+            data: {
+                '1A': {
+                    1: {
+                        1: {
+                            0: {id: 'YY88-T-8888-8', name: 'This stop'},
+                            1: {id: 'YY88-T-8899-8', name: 'Another stop'},
+                        },
+                    },
+                },
+            },
+            input: {id : 'YY88-T-8888-8', name : 'This stop'},
+            expected: [
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-T-8888-8', 'This stop', 'F', 0)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
+                    , 0
+                ),
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-T-8899-8', 'Another stop', 'F', 1)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
+                    , 1
+                ),
+            ],
+        }
+        , 'different stop names on same terminus'
+    )
+    @params(
+        {
+            data: {
+                '1A': {
+                    1: {
+                        1: {
+                            0: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                            1: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                        },
+                    },
+                },
+            },
+            input: {id : 'YY88-Y-8888-8', name : 'This stop'},
+            expected: [
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
+                    , 0
+                ),
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 1)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
+                    , 1
+                ),
+            ],
+        }
+        , 'stopping twice at same poles'
+    )
+    @params(
+        {
+            data: {
+                '1A': {
+                    1: {
+                        1: {
+                            0: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                            1: {id: 'YY88-Y-8899-8', name: 'This stop'},
+                        },
+                    },
+                },
+            },
+            input: {id : 'YY88-Y-8888-8', name : 'This stop'},
+            expected: [
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
+                    , 0
+                ),
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8899-8', 'This stop', 'F', 1)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
+                    , 1
+                ),
+            ],
+        }
+        , 'stopping twice at different poles'
+    )
+    @params(
+        {
+            data: {
+                '1A': {
+                    1: {
+                        1: {
+                            0: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                            1: {id: 'YY88-X-8888-8', name: 'This stop'},
+                        },
+                    },
+                },
+            },
+            input: {id : 'YY88-Y-8888-8', name : 'This stop'},
+            expected: [
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
+                    , 0
+                ),
+            ],
+        }
+        , 'different street direction'
+    )
+    @params(
+        {
+            data: {
+                '1A': {
+                    1: {
+                        1: {
+                            0: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                            1: {id: 'YY89-Y-8888-8', name: 'This stop'},
+                        },
+                    },
+                },
+            },
+            input: {id : 'YY88-Y-8888-8', name : 'This stop'},
+            expected: [
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
+                    , 0
+                ),
+            ],
+        }
+        , 'different street'
+    )
+    @params(
+        {
+            data: {
+                '1A': {
+                    1: {
+                        2: {
+                            0: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                        },
+                        3: {
+                            0: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                        },
+                    },
+                },
+            },
+            input: {id : 'YY88-Y-8888-8', name : 'This stop'},
+            expected: [
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 2, '', '', '')
+                    , 0
+                ),
+            ],
+        }
+        , 'two variants at same pole'
+    )
+    @params(
+        {
+            data: {
+                '1A': {
+                    1: {
+                        2: {
+                            0: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                        },
+                        3: {
+                            0: {id: 'YY88-Y-8899-8', name: 'This stop'},
+                        },
+                    },
+                },
+            },
+            input: {id : 'YY88-Y-8899-8', name : 'This stop'},
+            expected: [
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 2, '', '', '')
+                    , 0
+                ),
+            ],
+        }
+        , 'two variants at different poles'
+    )
+    @params(
+        {
+            data: {
+                '1A': {
+                    1: {
+                        1: {
+                            0: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                        },
+                    },
+                    2: {
+                        1: {
+                            0: {id: 'YY88-Y-8899-8', name: 'This stop'},
+                        },
+                    },
+                },
+            },
+            input: {id : 'YY88-Y-8888-8', name : 'This stop'},
+            expected: [
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
+                    , 0
+                ),
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8899-8', 'This stop', 'F', 0)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 2), 1, '', '', '')
+                    , 0
+                ),
+            ],
+        }
+        , 'opposite direction'
+    )
+    @params(
+        {
+            data: {
+                '1A': {
+                    1: {
+                        1: {
+                            0: {id: 'YY88-Y-8888-8', name: 'This stop'},
+                        },
+                    },
+                },
+                '1B': {
+                    2: {
+                        3: {
+                            5: {id: 'YY88-Y-8899-8', name: 'This stop'},
+                        },
+                    },
+                },
+            },
+            input: {id : 'YY88-Y-8888-8', name : 'This stop'},
+            expected: [
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
+                    , 0
+                ),
+                new (new Kmb).StopRoute(
+                    new (new Kmb).Stop('YY88-Y-8899-8', 'This stop', 'F', 5)
+                    , new (new Kmb).Variant(new (new Kmb).Route('1B', 2), 3, '', '', '')
+                    , 5
+                ),
+            ],
+        }
+        , 'two routes'
+    )
     @test
-    async getVariantList([language, column_suffix] : [Language, 'CHI' | 'ENG']): Promise<void> {
-        const json = {
-            "data": {
-                "routes": [
-                    {
-                        "Destination_ENG": "KENNEDY TOWN",
-                        "Origin_ENG": "SHAM SHUI PO (PAK TIN ESTATE)",
-                        "Origin_CHI": "深水(白田)",
-                        "To_saturday": "2350",
-                        "From_saturday": "0545",
-                        "Desc_CHI": "",
-                        "Desc_ENG": "",
-                        "ServiceType": "01   ",
-                        "Route": "104",
-                        "Destination_CHI": "堅尼地城",
-                        "Bound": "2",
-                        "From_weekday": "0545",
-                        "From_holiday": "0545",
-                        "To_weekday": "2350",
-                        "To_holiday": "2350"
-                    },
-                    {
-                        "Destination_ENG": "QUEEN VICTORIA STREET",
-                        "Origin_ENG": "CROSS HARBOUR TUNNEL",
-                        "Origin_CHI": "紅磡海底隧道",
-                        "To_saturday": "0000",
-                        "From_saturday": "0000",
-                        "Desc_CHI": "星期一至五 早上繁忙時間特別服務",
-                        "Desc_ENG": "Morning Peak Special Departures Monday to Friday",
-                        "ServiceType": "02   ",
-                        "Route": "104",
-                        "Destination_CHI": "域多利皇后街",
-                        "Bound": "2",
-                        "From_weekday": "0000",
-                        "From_holiday": "0000",
-                        "To_weekday": "0000",
-                        "To_holiday": "0000"
-                    },
-                    {
-                        "Destination_ENG": "QUEEN VICTORIA STREET",
-                        "Origin_ENG": "CHAK ON",
-                        "Origin_CHI": "澤安",
-                        "To_saturday": "0000",
-                        "From_saturday": "0000",
-                        "Desc_CHI": "星期一至六 早上繁忙時間特別服務",
-                        "Desc_ENG": "Morning Peak Special Departures Monday to Saturday",
-                        "ServiceType": "05   ",
-                        "Route": "104",
-                        "Destination_CHI": "域多利皇后街",
-                        "Bound": "2",
-                        "From_weekday": "0000",
-                        "From_holiday": "0000",
-                        "To_weekday": "0000",
-                        "To_holiday": "0000"
-                    },
-                    {
-                        "Destination_ENG": "KENNEDY TOWN",
-                        "Origin_ENG": "CROSS HARBOUR TUNNEL",
-                        "Origin_CHI": "紅磡海底隧道",
-                        "To_saturday": "0000",
-                        "From_saturday": "0000",
-                        "Desc_CHI": "星期一至六 早上繁忙時間特別服務",
-                        "Desc_ENG": "Morning Peak Special Departures Monday to Saturday",
-                        "ServiceType": "07   ",
-                        "Route": "104",
-                        "Destination_CHI": "堅尼地城",
-                        "Bound": "2",
-                        "From_weekday": "0000",
-                        "From_holiday": "0000",
-                        "To_weekday": "0000",
-                        "To_holiday": "0000"
-                    }
-                ], "CountSpecal": 3
-            }, "result": true
-        };
-        const kmb = new Kmb(language);
-        const api_stub = Sinon.stub(kmb, 'callApi').withArgs({action : 'getSpecialRoute', route : '104', bound : '2'})
-            .returns(
+    async getStopRoutes(
+        {data, input, expected}: {
+            data: Record<string, Record<number, Record<number, Record<number, { id: string, name: string }>>>>,
+            input: {id : string, name? : string},
+            expected: StopRoute[]
+        }
+    )
+        : Promise<void> {
+        const stop_storage = new Storage;
+        const storage = new Storage;
+        const kmb = new Kmb('en', stop_storage, storage);
+        const api_stub = Sinon.stub(kmb, 'callApi');
+        api_stub.returns(Promise.resolve({"data": Object.keys(data)}));
+        const getRoutes_stub = Sinon.stub(kmb, 'getRoutes');
+        for (const [route_number, route_details] of Object.entries(data)) {
+            getRoutes_stub.withArgs(route_number).returns(
                 Promise.resolve(
-                    json
+                    Object.entries(route_details).map(
+                        ([direction, direction_details]) => {
+                            const route = new kmb.Route(route_number, Number(direction));
+                            Sinon.stub(route, 'getVariants').returns(
+                                Promise.resolve(
+                                    Object.entries(direction_details).map(
+                                        ([variant_id, variant_details]) => {
+                                            const variant = new kmb.Variant(route, Number(variant_id), '', '', '');
+                                            Sinon.stub(variant, 'getStops')
+                                                .returns(
+                                                    Promise.resolve(
+                                                        Object.entries(variant_details).map(
+                                                            ([key, value]) => new kmb.Stop(value.id, value.name, 'F', Number(key))
+                                                        )
+                                                    )
+                                                );
+                                            return variant;
+                                        }
+                                    )
+                                )
+                            );
+                            return route;
+                        }
+                    )
                 )
             );
-        const route = new kmb.Route('104', 2);
-        const variants = await kmb.Variant.get(route);
-        assert(api_stub.calledOnce);
+        }
+        api_stub.calledWithExactly(({action: 'getRoutesInStop', 'bsiCode': input.id}));
+        const real_input = input.name === undefined ? new kmb.IncompleteStop(input.id) : new kmb.Stop(input.id, input.name, 'F', 0);
+        assert.deepStrictEqual(await real_input.getStopRoutes(), expected);
         assert.deepStrictEqual(
-            variants
-            , json.data.routes.map(
-                item => new kmb.Variant(
-                    route
-                    , Number(item.ServiceType)
-                    , Kmb.toTitleCase(item[`Origin_${column_suffix}` as keyof typeof item])
-                    , Kmb.toTitleCase(item[`Destination_${column_suffix}` as keyof typeof item])
-                    , item[`Desc_${column_suffix}` as keyof typeof item]
-                )
-            )
+            JSON.parse(storage.getItem(`${input.id}_${kmb.language}`) ?? '')
+            , JSON.parse(JSON.stringify(expected))
         );
+    }
+
+    @test
+    async getStopRoutesFromStorage(): Promise<void> {
+        const stop_storage = new Storage;
+        const storage = new Storage;
+        const kmb = new Kmb('en', stop_storage, storage);
+        const expected = [
+            new kmb.StopRoute(
+                new kmb.Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                , new kmb.Variant(new kmb.Route('1A', 1), 1, '', '', '')
+                , 0
+            ),
+        ];
+        storage.setItem(
+            `YY88-Y-8888-8_${kmb.language}`
+            , JSON.stringify(expected)
+        );
+        const spy = Sinon.spy(kmb, 'callApi');
+        const result = await new kmb.IncompleteStop('YY88-Y-8888-8').getStopRoutes();
+        assert(spy.notCalled);
+        assert.deepStrictEqual(result, expected);
     }
 }

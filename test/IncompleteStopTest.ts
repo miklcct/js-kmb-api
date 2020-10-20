@@ -26,7 +26,7 @@ export class IncompleteStopTest extends TestCase {
     }
 
     @test
-    nameIsReadFromLocalStorage() : void {
+    nameIsReadFromStorage() : void {
         const storage = new Storage;
         storage.setItem('TS06-S-1000-0_zh-hans', '青雲站');
         assert.strictEqual(new new Kmb('zh-hans', storage).IncompleteStop('TS06-S-1000-0').name, '青雲站');

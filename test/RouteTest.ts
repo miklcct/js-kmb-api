@@ -1,8 +1,8 @@
-import {suite, test, params} from '@testdeck/mocha';
+import {params, suite, test} from '@testdeck/mocha';
 import {assert} from 'chai';
 import {TestCase} from "./TestCase";
+import Kmb, {Language, Route} from "../src";
 import Sinon from "sinon";
-import Kmb, {Route} from "../src";
 
 @suite
 export class RouteTest extends TestCase {
@@ -11,40 +11,17 @@ export class RouteTest extends TestCase {
         assert.strictEqual(new (new Kmb).Route('N260', 2).getRouteBound(), 'N260-2');
     }
 
-    @test
-    async getBounds(): Promise<void> {
-        const json = {
-            "data": [
-                {"SERVICE_TYPE": 1, "BOUND": 1, "ROUTE": "104"},
-                {"SERVICE_TYPE": 2, "BOUND": 1, "ROUTE": "104"},
-                {"SERVICE_TYPE": 3, "BOUND": 1, "ROUTE": "104"},
-                {"SERVICE_TYPE": 4, "BOUND": 1, "ROUTE": "104"},
-                {"SERVICE_TYPE": 1, "BOUND": 2, "ROUTE": "104"},
-                {"SERVICE_TYPE": 2, "BOUND": 2, "ROUTE": "104"},
-                {"SERVICE_TYPE": 5, "BOUND": 2, "ROUTE": "104"},
-                {"SERVICE_TYPE": 7, "BOUND": 2, "ROUTE": "104"}
-            ],
-            "result": true
-        };
-        const kmb = new Kmb;
-        const api_stub = Sinon.stub(kmb, 'callApi').withArgs({action : 'getroutebound', route : '104'})
-            .returns(Promise.resolve(json));
-        const result = await kmb.Route.getBounds('104');
-        assert(api_stub.calledOnce);
-        assert.sameMembers(result, [1, 2]);
-    }
-
     @params(
         [new (new Kmb).Route('58M', 1), new (new Kmb).Route('58M', 1), 0]
-        , 'compare same (new Kmb).Route'
+        , 'compare same route'
     )
     @params(
         [new (new Kmb).Route('58M', 1), new (new Kmb).Route('58M', 0), 1]
-        , 'compare same (new Kmb).Route with decreasing bounds'
+        , 'compare same route with decreasing bounds'
     )
     @params(
         [new (new Kmb).Route('58M', 1), new (new Kmb).Route('58M', 2), -1]
-        , 'compare same (new Kmb).Route with increasing bounds'
+        , 'compare same route with increasing bounds'
     )
     @params(
         [new (new Kmb).Route('44', 2), new (new Kmb).Route('44P', 2), -1]
@@ -84,5 +61,103 @@ export class RouteTest extends TestCase {
     )
     compare([a, b, result] : [Route, Route, -1 | 0 | 1]) : void {
         assert.strictEqual((new Kmb).Route.compare(a, b), result);
+    }
+
+    @params(['en', 'ENG'], 'get English variant list')
+    @params(['zh-hant', 'CHI'], 'get traditional Chinese variant list')
+    @params(['zh-hans', 'CHI'], 'get simplified Chinese variant list')
+    @test
+    async getVariants([language, column_suffix] : [Language, 'CHI' | 'ENG']): Promise<void> {
+        const json = {
+            "data": {
+                "routes": [
+                    {
+                        "Destination_ENG": "KENNEDY TOWN",
+                        "Origin_ENG": "SHAM SHUI PO (PAK TIN ESTATE)",
+                        "Origin_CHI": "深水(白田)",
+                        "To_saturday": "2350",
+                        "From_saturday": "0545",
+                        "Desc_CHI": "",
+                        "Desc_ENG": "",
+                        "ServiceType": "01   ",
+                        "Route": "104",
+                        "Destination_CHI": "堅尼地城",
+                        "Bound": "2",
+                        "From_weekday": "0545",
+                        "From_holiday": "0545",
+                        "To_weekday": "2350",
+                        "To_holiday": "2350"
+                    },
+                    {
+                        "Destination_ENG": "QUEEN VICTORIA STREET",
+                        "Origin_ENG": "CROSS HARBOUR TUNNEL",
+                        "Origin_CHI": "紅磡海底隧道",
+                        "To_saturday": "0000",
+                        "From_saturday": "0000",
+                        "Desc_CHI": "星期一至五 早上繁忙時間特別服務",
+                        "Desc_ENG": "Morning Peak Special Departures Monday to Friday",
+                        "ServiceType": "02   ",
+                        "Route": "104",
+                        "Destination_CHI": "域多利皇后街",
+                        "Bound": "2",
+                        "From_weekday": "0000",
+                        "From_holiday": "0000",
+                        "To_weekday": "0000",
+                        "To_holiday": "0000"
+                    },
+                    {
+                        "Destination_ENG": "QUEEN VICTORIA STREET",
+                        "Origin_ENG": "CHAK ON",
+                        "Origin_CHI": "澤安",
+                        "To_saturday": "0000",
+                        "From_saturday": "0000",
+                        "Desc_CHI": "星期一至六 早上繁忙時間特別服務",
+                        "Desc_ENG": "Morning Peak Special Departures Monday to Saturday",
+                        "ServiceType": "05   ",
+                        "Route": "104",
+                        "Destination_CHI": "域多利皇后街",
+                        "Bound": "2",
+                        "From_weekday": "0000",
+                        "From_holiday": "0000",
+                        "To_weekday": "0000",
+                        "To_holiday": "0000"
+                    },
+                    {
+                        "Destination_ENG": "KENNEDY TOWN",
+                        "Origin_ENG": "CROSS HARBOUR TUNNEL",
+                        "Origin_CHI": "紅磡海底隧道",
+                        "To_saturday": "0000",
+                        "From_saturday": "0000",
+                        "Desc_CHI": "星期一至六 早上繁忙時間特別服務",
+                        "Desc_ENG": "Morning Peak Special Departures Monday to Saturday",
+                        "ServiceType": "07   ",
+                        "Route": "104",
+                        "Destination_CHI": "堅尼地城",
+                        "Bound": "2",
+                        "From_weekday": "0000",
+                        "From_holiday": "0000",
+                        "To_weekday": "0000",
+                        "To_holiday": "0000"
+                    }
+                ], "CountSpecal": 3
+            }, "result": true
+        };
+        const kmb = new Kmb(language);
+        const api_stub = Sinon.stub(kmb, 'callApi').returns(Promise.resolve(json));
+        const route = new kmb.Route('104', 2);
+        const variants = await route.getVariants();
+        assert(api_stub.calledWithExactly({action : 'getSpecialRoute', route : '104', bound : '2'}));
+        assert.deepStrictEqual(
+            variants
+            , json.data.routes.map(
+                item => new kmb.Variant(
+                    route
+                    , Number(item.ServiceType)
+                    , Kmb.toTitleCase(item[`Origin_${column_suffix}` as keyof typeof item])
+                    , Kmb.toTitleCase(item[`Destination_${column_suffix}` as keyof typeof item])
+                    , item[`Desc_${column_suffix}` as keyof typeof item]
+                )
+            )
+        );
     }
 }
