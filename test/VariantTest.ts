@@ -1,20 +1,18 @@
 import {TestCase} from "./TestCase";
 import {params, suite, test} from '@testdeck/mocha';
 import {assert} from 'chai';
-import Variant from "../src/Variant";
-import Route from "../src/Route";
 import Sinon from "sinon";
-import Common from "../src/Common";
-import {Language} from "../src/Language";
+import Kmb, {Language} from "../src";
 
 @suite
 export class VariantTest extends TestCase {
     @test
     getOriginDestinationString(): void {
+        const kmb = new Kmb;
         assert.strictEqual(
             '大埔(富亨) → 大埔中心(循環線)'
-            , new Variant(
-                new Route('71B', 1)
+            , new kmb.Variant(
+                new kmb.Route('71B', 1)
                 , 1
                 , '大埔(富亨)'
                 , '大埔中心(循環線)'
@@ -102,24 +100,24 @@ export class VariantTest extends TestCase {
                 ], "CountSpecal": 3
             }, "result": true
         };
-        const api_stub = Sinon.stub(Common, 'callApi').withArgs({action : 'getSpecialRoute', route : '104', bound : '2'})
+        const kmb = new Kmb(language);
+        const api_stub = Sinon.stub(kmb, 'callApi').withArgs({action : 'getSpecialRoute', route : '104', bound : '2'})
             .returns(
                 Promise.resolve(
                     json
                 )
             );
-        Sinon.stub(Common, 'getLanguage').returns(language);
-        const route = new Route('104', 2);
-        const variants = await Variant.get(route);
+        const route = new kmb.Route('104', 2);
+        const variants = await kmb.Variant.get(route);
         assert(api_stub.calledOnce);
         assert.deepStrictEqual(
             variants
             , json.data.routes.map(
-                item => new Variant(
+                item => new kmb.Variant(
                     route
                     , Number(item.ServiceType)
-                    , item[`Origin_${column_suffix}` as keyof typeof item].toTitleCase()
-                    , item[`Destination_${column_suffix}` as keyof typeof item].toTitleCase()
+                    , Kmb.toTitleCase(item[`Origin_${column_suffix}` as keyof typeof item])
+                    , Kmb.toTitleCase(item[`Destination_${column_suffix}` as keyof typeof item])
                     , item[`Desc_${column_suffix}` as keyof typeof item]
                 )
             )

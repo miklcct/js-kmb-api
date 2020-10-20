@@ -1,7 +1,29 @@
 # Javascript module for getting KMB data
 This is a library for getting KMB data. It can get routes, stops, variants, and ETAs.
 
+## Example Usage
+### Loading the library
+```typescript
+// load the main API class
+import Kmb from "js-kmb-api";
+// load the type definitions
+import {Language, Stop, IncompleteStop, Route, Variant, StopRoute, Eta} from "js-kmb-api"
+```
+
+### Using the library
+```js
+// create an API instance
+// It's recommended to use localStorage to cache stops, and sessionStorage to cache stop routes
+// because stop names do not change often and are reloaded automatically
+const kmb = new Kmb('en', localStorage, sessionStorage);
+
+// create an API instance without caching
+const kmb_no_cache = new Kmb('zh-hans');
+````
+
 ## Classes
+All the classes below are inside the kmb object tying them to the API instance
+
 ### `Route`
 Represents a route with number and bound.
 ### `Stop`
@@ -28,6 +50,3 @@ Calling `Variant.get` with a route will return all variants of that route.
 Represents an ETA entry.
 
 Calling `Eta.get` with a StopRoute will return the ETA for that stop for that route.
-
-## Node.js
-This library is designed for use on the browser. Usage on node.js requires [global-jsdom](https://www.npmjs.com/package/global-jsdom) to be loaded.

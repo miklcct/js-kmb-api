@@ -1,22 +1,18 @@
-import {suite, test, params} from '@testdeck/mocha';
+import {params, suite, test} from '@testdeck/mocha';
 import {assert} from 'chai';
-import Stop from "../src/Stop";
 import Sinon from "sinon";
-import Common from "../src/Common";
-import Variant from "../src/Variant";
-import Route from "../src/Route";
+import Kmb from "../src";
 import {TestCase} from "./TestCase";
-import {Language} from '../src/Language';
+import {Language} from '../src';
 
 @suite
 export class StopTest extends TestCase {
     @test
-    localStorageIsSetWhenConstructed(): void {
-        localStorage.clear();
-        Sinon.stub(Common, 'getLanguage').returns('en');
+    storageIsSetWhenConstructed(): void {
+        const storage = new Storage;
         // noinspection ObjectAllocationIgnored
-        new Stop('EX01-C-1000-0', 'Example', 'I', 15);
-        assert(localStorage.getItem('EX01-C-1000-0_en') === 'Example');
+        new (new Kmb('en', storage)).Stop('EX01-C-1000-0', 'Example', 'I', 15);
+        assert(storage.getItem('EX01-C-1000-0_en') === 'Example');
     }
 
     @params(['en', 'EName'], 'get English stop list')
@@ -122,13 +118,13 @@ export class StopTest extends TestCase {
             },
             "result": true
         };
-        const api_stub = Sinon.stub(Common, 'callApi').withArgs({action: 'getstops', route: '71B', bound: '1', serviceType: '1'}).returns(Promise.resolve(json));
-        Sinon.stub(Common, 'getLanguage').returns(language);
-        const stops = await Stop.get(new Variant(new Route('71B', 1), 1, '大埔(富亨)', '大埔中心(循環線)', ''));
+        const kmb = new Kmb(language);
+        const api_stub = Sinon.stub(kmb, 'callApi').withArgs({action: 'getstops', route: '71B', bound: '1', serviceType: '1'}).returns(Promise.resolve(json));
+        const stops = await kmb.Stop.get(new kmb.Variant(new kmb.Route('71B', 1), 1, '大埔(富亨)', '大埔中心(循環線)', ''));
         assert(api_stub.calledOnce);
         assert.deepStrictEqual(
             json.data.routeStops.map(
-                item => new Stop(item.BSICode, item[column as keyof typeof item], item.Direction.trim(), Number(item.Seq))
+                item => new kmb.Stop(item.BSICode, item[column as keyof typeof item], item.Direction.trim(), Number(item.Seq))
             )
             , stops
         );

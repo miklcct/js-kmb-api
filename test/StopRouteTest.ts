@@ -2,12 +2,9 @@ import {suite, test, params} from '@testdeck/mocha';
 import {assert} from 'chai';
 import {TestCase} from "./TestCase";
 import Sinon from "sinon";
-import Common from "../src/Common";
-import Route from "../src/Route";
-import Variant from "../src/Variant";
-import Stop from "../src/Stop";
+import Kmb from "../src";
 import StopRoute from "../src/StopRoute";
-import IncompleteStop from "../src/IncompleteStop";
+import Stop from "../src/Stop";
 
 @suite
 export class StopRouteTest extends TestCase {
@@ -22,12 +19,12 @@ export class StopRouteTest extends TestCase {
                     },
                 },
             },
-            input: new Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
+            input: new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
             expected: {
                 '1A-1' : [
-                    new StopRoute(
-                        new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
-                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                         , 0
                     ),
                 ],
@@ -46,12 +43,12 @@ export class StopRouteTest extends TestCase {
                     },
                 },
             },
-            input: new IncompleteStop('YY88-Y-8888-8'),
+            input: new (new Kmb).IncompleteStop('YY88-Y-8888-8'),
             expected: {
                 '1A-1' : [
-                    new StopRoute(
-                        new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
-                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                         , 0
                     ),
                 ],
@@ -71,12 +68,12 @@ export class StopRouteTest extends TestCase {
                     },
                 },
             },
-            input: new Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
+            input: new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
             expected: {
                 '1A-1' : [
-                    new StopRoute(
-                        new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
-                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                         , 0
                     ),
                 ],
@@ -96,17 +93,17 @@ export class StopRouteTest extends TestCase {
                     },
                 },
             },
-            input: new Stop('YY88-T-8888-8', 'This stop', 'F', 0),
+            input: new (new Kmb).Stop('YY88-T-8888-8', 'This stop', 'F', 0),
             expected: {
                 '1A-1' : [
-                    new StopRoute(
-                        new Stop('YY88-T-8888-8', 'This stop', 'F', 0)
-                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-T-8888-8', 'This stop', 'F', 0)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                         , 0
                     ),
-                    new StopRoute(
-                        new Stop('YY88-T-8899-8', 'Another stop', 'F', 1)
-                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-T-8899-8', 'Another stop', 'F', 1)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                         , 1
                     ),
                 ],
@@ -126,17 +123,17 @@ export class StopRouteTest extends TestCase {
                     },
                 },
             },
-            input: new Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
+            input: new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
             expected: {
                 '1A-1' : [
-                    new StopRoute(
-                        new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
-                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                         , 0
                     ),
-                    new StopRoute(
-                        new Stop('YY88-Y-8888-8', 'This stop', 'F', 1)
-                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 1)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                         , 1
                     ),
                 ],
@@ -156,17 +153,17 @@ export class StopRouteTest extends TestCase {
                     },
                 },
             },
-            input: new Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
+            input: new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
             expected: {
                 '1A-1' : [
-                    new StopRoute(
-                        new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
-                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                         , 0
                     ),
-                    new StopRoute(
-                        new Stop('YY88-Y-8899-8', 'This stop', 'F', 1)
-                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8899-8', 'This stop', 'F', 1)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                         , 1
                     ),
                 ],
@@ -186,12 +183,12 @@ export class StopRouteTest extends TestCase {
                     },
                 },
             },
-            input: new Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
+            input: new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
             expected: {
                 '1A-1' : [
-                    new StopRoute(
-                        new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
-                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                         , 0
                     ),
                 ],
@@ -211,12 +208,12 @@ export class StopRouteTest extends TestCase {
                     },
                 },
             },
-            input: new Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
+            input: new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
             expected: {
                 '1A-1' : [
-                    new StopRoute(
-                        new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
-                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                         , 0
                     ),
                 ],
@@ -238,12 +235,12 @@ export class StopRouteTest extends TestCase {
                     },
                 },
             },
-            input: new Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
+            input: new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
             expected: {
                 '1A-1' : [
-                    new StopRoute(
-                        new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
-                        , new Variant(new Route('1A', 1), 2, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 2, '', '', '')
                         , 0
                     ),
                 ],
@@ -265,12 +262,12 @@ export class StopRouteTest extends TestCase {
                     },
                 },
             },
-            input: new Stop('YY88-Y-8899-8', 'This stop', 'F', 0),
+            input: new (new Kmb).Stop('YY88-Y-8899-8', 'This stop', 'F', 0),
             expected: {
                 '1A-1' : [
-                    new StopRoute(
-                        new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
-                        , new Variant(new Route('1A', 1), 2, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 2, '', '', '')
                         , 0
                     ),
                 ],
@@ -294,19 +291,19 @@ export class StopRouteTest extends TestCase {
                     },
                 },
             },
-            input: new Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
+            input: new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
             expected: {
                 '1A-1' : [
-                    new StopRoute(
-                        new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
-                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                         , 0
                     ),
                 ],
                 '1A-2' : [
-                    new StopRoute(
-                        new Stop('YY88-Y-8899-8', 'This stop', 'F', 0)
-                        , new Variant(new Route('1A', 2), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8899-8', 'This stop', 'F', 0)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 2), 1, '', '', '')
                         , 0
                     ),
                 ],
@@ -332,19 +329,19 @@ export class StopRouteTest extends TestCase {
                     },
                 },
             },
-            input: new Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
+            input: new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0),
             expected: {
                 '1A-1' : [
-                    new StopRoute(
-                        new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
-                        , new Variant(new Route('1A', 1), 1, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                         , 0
                     ),
                 ],
                 '1B-2' : [
-                    new StopRoute(
-                        new Stop('YY88-Y-8899-8', 'This stop', 'F', 5)
-                        , new Variant(new Route('1B', 2), 3, '', '', '')
+                    new (new Kmb).StopRoute(
+                        new (new Kmb).Stop('YY88-Y-8899-8', 'This stop', 'F', 5)
+                        , new (new Kmb).Variant(new (new Kmb).Route('1B', 2), 3, '', '', '')
                         , 5
                     ),
                 ],
@@ -362,59 +359,65 @@ export class StopRouteTest extends TestCase {
     )
         : Promise<void>
     {
-        const api_stub = Sinon.stub(Common, 'callApi');
+        const stop_storage = new Storage;
+        const storage = new Storage;
+        const kmb = new Kmb('en', stop_storage, storage);
+        const api_stub = Sinon.stub(kmb, 'callApi');
         api_stub.withArgs({action : 'getRoutesInStop', 'bsiCode' : input.id})
             .returns(
                 Promise.resolve({"data" : Object.keys(data)})
             );
-        const route_stub = Sinon.stub(Route, 'getBounds');
-        const variant_stub = Sinon.stub(Variant, 'get');
-        const stop_stub = Sinon.stub(Stop, 'get');
+        const route_stub = Sinon.stub(kmb.Route, 'getBounds');
+        const variant_stub = Sinon.stub(kmb.Variant, 'get');
+        const stop_stub = Sinon.stub(kmb.Stop, 'get');
         for (const [route_number, route_details] of Object.entries(data)) {
             route_stub.withArgs(route_number).returns(Promise.resolve(Object.keys(route_details).map(Number)));
             for (const [direction, direction_details] of Object.entries(route_details)) {
-                const route = new Route(route_number, Number(direction));
+                const route = new kmb.Route(route_number, Number(direction));
                 variant_stub.withArgs(route).returns(
                     Promise.resolve(
-                        Object.keys(direction_details).map(variant_id => new Variant(route, Number(variant_id), '', '', ''))
+                        Object.keys(direction_details).map(variant_id => new kmb.Variant(route, Number(variant_id), '', '', ''))
                     )
                 );
                 for (const [variant_id, variant_details] of Object.entries(direction_details)) {
-                    stop_stub.withArgs(new Variant(route, Number(variant_id), '', '', ''))
+                    stop_stub.withArgs(new kmb.Variant(route, Number(variant_id), '', '', ''))
                         .returns(
                             Promise.resolve(
                                 Object.entries(variant_details).map(
-                                    ([key, value]) => new Stop(value.id, value.name, 'F', Number(key))
+                                    ([key, value]) => new kmb.Stop(value.id, value.name, 'F', Number(key))
                                 )
                             )
                         );
                 }
             }
         }
-        assert.deepStrictEqual(await StopRoute.get(input), expected);
+        assert.deepStrictEqual(await kmb.StopRoute.get(input), expected);
         assert.deepStrictEqual(
-            JSON.parse(sessionStorage.getItem(`${input.id}_${Common.getLanguage()}`) ?? '')
+            JSON.parse(storage.getItem(`${input.id}_${kmb.language}`) ?? '')
             , JSON.parse(JSON.stringify(expected))
         );
     }
 
     @test
     async getStopRouteListFromCache(): Promise<void> {
+        const stop_storage = new Storage;
+        const storage = new Storage;
+        const kmb = new Kmb('en', stop_storage, storage);
         const expected = {
             '1A-1': [
-                new StopRoute(
-                    new Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
-                    , new Variant(new Route('1A', 1), 1, '', '', '')
+                new kmb.StopRoute(
+                    new kmb.Stop('YY88-Y-8888-8', 'This stop', 'F', 0)
+                    , new kmb.Variant(new kmb.Route('1A', 1), 1, '', '', '')
                     , 0
                 ),
             ],
         };
-        sessionStorage.setItem(
-            `YY88-Y-8888-8_${Common.getLanguage()}`
+        storage.setItem(
+            `YY88-Y-8888-8_${kmb.language}`
             , JSON.stringify(expected)
         );
-        const spy = Sinon.spy(Common, 'callApi');
-        const result = await StopRoute.get(new IncompleteStop('YY88-Y-8888-8'));
+        const spy = Sinon.spy(kmb, 'callApi');
+        const result = await kmb.StopRoute.get(new kmb.IncompleteStop('YY88-Y-8888-8'));
         assert(spy.notCalled);
         assert.deepStrictEqual(result, expected);
     }
