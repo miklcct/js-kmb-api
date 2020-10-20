@@ -3,7 +3,6 @@ import {params, suite, test} from '@testdeck/mocha';
 import {assert} from 'chai';
 import Sinon from "sinon";
 import Kmb from "../src";
-import StopRoute from "../src/StopRoute";
 
 @suite
 export class VariantTest extends TestCase {
@@ -340,7 +339,7 @@ export class VariantTest extends TestCase {
         {data, input, expected}: {
             data: Record<string, Record<number, Record<number, Record<number, { id: string, name: string }>>>>,
             input: {id : string, name? : string},
-            expected: StopRoute[]
+            expected: InstanceType<Kmb["StopRoute"]>[]
         }
     )
         : Promise<void> {

@@ -1,7 +1,7 @@
 import {params, suite, test} from '@testdeck/mocha';
 import {assert} from 'chai';
 import {TestCase} from "./TestCase";
-import Kmb, {Language, Route} from "../src";
+import Kmb, {Language} from "../src";
 import Sinon from "sinon";
 
 @suite
@@ -59,7 +59,7 @@ export class RouteTest extends TestCase {
         [new (new Kmb).Route('A33X', 2), new (new Kmb).Route('985', 1), 1]
         , 'compare routes beginning with a letter and a number'
     )
-    compare([a, b, result] : [Route, Route, -1 | 0 | 1]) : void {
+    compare([a, b, result] : [InstanceType<Kmb["Route"]>, InstanceType<Kmb["Route"]>, -1 | 0 | 1]) : void {
         assert.strictEqual((new Kmb).Route.compare(a, b), result);
     }
 
