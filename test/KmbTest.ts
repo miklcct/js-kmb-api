@@ -1,9 +1,10 @@
 import {TestCase} from "./TestCase";
-import {test} from "@testdeck/mocha";
+import {suite, test} from "@testdeck/mocha";
 import Kmb from "../src";
 import Sinon from "sinon";
 import {assert} from "chai";
 
+@suite
 export class KmbTest extends TestCase {
     @test
     async getRoutes(): Promise<void> {
