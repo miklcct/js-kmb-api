@@ -473,38 +473,6 @@ export default class Kmb {
     public static toTitleCase(string: string): string {
         return string.toLowerCase().replace(/((^|[^a-z0-9'])+)(.)/g, (match, p1, p2, p3) => p1 + p3.toUpperCase());
     }
-
-    /**
-     * Get the stop ID in the query string
-     *
-     * @todo: remove this and move to front-end
-     */
-    public static getQueryStopId() : string | null {
-        return (new URLSearchParams(window.location.search)).get('stop');
-    }
-
-    /**
-     * Get the selected route IDs and stop positions in the query string
-     *
-     * @todo: remove this and move to front-end
-     */
-    public static getQuerySelections() : [string, number|null][]{
-        return (new URLSearchParams(window.location.search)).getAll('selections').map(
-            item => {
-                const segments = item.split(':');
-                return [segments[0], segments.length >= 2 ? Number(segments[1]) : null];
-            }
-        );
-    }
-
-    /**
-     * Get if "one departure" mode is selected
-     *
-     * @todo: remove this and move to front-end
-     */
-    public static getQueryOneDeparture() : boolean {
-        return Boolean((new URLSearchParams(window.location.search)).get('one_departure'));
-    }
 }
 
 export {Language, IncompleteStop, Stop, Route, Variant, StopRoute, Eta};
