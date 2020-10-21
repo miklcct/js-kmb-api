@@ -14,7 +14,6 @@ export default class Kmb {
     public proxyUrl = 'https://miklcct.com/proxy/';
     public apiEndpoint = 'https://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx';
 
-    public readonly language : Language;
     public readonly IncompleteStop;
     public readonly Stop;
     public readonly Route;
@@ -22,17 +21,14 @@ export default class Kmb {
     public readonly StopRoute;
     public readonly Eta;
 
-    public constructor(language : Language = 'en', stopStorage? : Storage, stopRouteStorage? : Storage) {
+    public constructor(public readonly language : Language = 'en', stopStorage? : Storage, stopRouteStorage? : Storage) {
         if (stopRouteStorage !== undefined && stopStorage === undefined) {
             throw new Error('Cannot use stopRouteStorage without stopStorage');
         }
-        this.language = language;
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const kmb = this;
         this.IncompleteStop = class {
-            public readonly id: string;
-            public constructor(id : string) {
-                this.id = id;
+            public constructor(public readonly id : string) {
             }
 
             public get streetId() : string{
@@ -139,11 +135,7 @@ export default class Kmb {
         };
 
         this.Route = class {
-            public readonly number : string;
-            public readonly bound : number;
-            public constructor(number : string, bound : number) {
-                this.number = number;
-                this.bound = bound;
+            public constructor(public readonly number : string, public readonly bound : number) {
             }
 
             /**
@@ -261,12 +253,6 @@ export default class Kmb {
         };
 
         this.Variant = class {
-            public readonly route;
-            public readonly serviceType;
-            public readonly origin;
-            public readonly destination;
-            public readonly description;
-
             /**
              * Create a route variant
              *
@@ -276,12 +262,13 @@ export default class Kmb {
              * @param destination
              * @param description The description of the variant, e.g. "Normal routeing"
              */
-            constructor(route : Route, serviceType : number, origin : string, destination : string, description : string) {
-                this.route = route;
-                this.serviceType = serviceType;
-                this.origin = origin;
-                this.destination = destination;
-                this.description = description;
+            constructor(
+                public readonly route: Route
+                , public readonly serviceType: number
+                , public readonly origin: string
+                , public readonly destination: string
+                , public readonly description: string
+            ) {
             }
 
             public getOriginDestinationString() : string {
@@ -335,13 +322,11 @@ export default class Kmb {
         };
 
         this.StopRoute = class {
-            public readonly stop;
-            public readonly variant;
-            public readonly sequence : number;
-            public constructor(stop : Stop, variant: Variant, sequence: number) {
-                this.stop = stop;
-                this.variant = variant;
-                this.sequence = sequence;
+            public constructor(
+                public readonly stop : Stop
+                , public readonly variant: Variant
+                , public readonly sequence: number
+            ) {
             }
 
             async getEtas(retry_count = 5) : Promise<Eta[]> {
@@ -414,12 +399,6 @@ export default class Kmb {
         this.Eta = class {
             public static mobileApiMethod : 'GET' | 'POST' = 'GET';
 
-            public readonly stopRoute;
-            public readonly time: Date;
-            public readonly distance?: number;
-            public readonly remark: string;
-            public readonly realTime: boolean;
-
             /**
              * Create an ETA entry
              *
@@ -429,12 +408,13 @@ export default class Kmb {
              * @param remark The remark of the ETA (e.g. KMB/NWFB, Scheduled)
              * @param realTime If the ETA is real-time
              */
-            public constructor(stopRoute : StopRoute, time : Date, distance : number | undefined, remark : string, realTime : boolean) {
-                this.stopRoute = stopRoute;
-                this.time = time;
-                this.distance = distance;
-                this.remark = remark;
-                this.realTime = realTime;
+            public constructor(
+                public readonly stopRoute : StopRoute
+                , public readonly time : Date
+                , public readonly distance : number | undefined
+                , public readonly remark : string
+                , public readonly realTime : boolean
+            ) {
             }
 
             /**
