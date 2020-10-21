@@ -49,10 +49,20 @@ export default class Kmb {
 
             /**
              * Get the list of route variants serving a particular stop
+             * @param all_variants Specify this to be true to list all variants for the same route and direction, false for only the main one
              * @param update_count Specify this to update the progress of how many routes are remaining
              */
-            async getStopRoutes(update_count?: (remaining: number) => void): Promise<StopRoute[]> {
+            async getStopRoutes(all_variants = false, update_count?: (remaining: number) => void): Promise<StopRoute[]> {
                 const cached = stopRouteStorage?.getItem(`${this.id}_${kmb.language}`) ?? null;
+                const get_main_service_type = (variants: Variant[], route: Route): number =>
+                    Math.min(
+                        ...variants.filter(a => a.route.getRouteBound() === route.getRouteBound())
+                            .map(a => a.serviceType)
+                    );
+                const filter_stop_routes: (value: StopRoute, index: number, array: StopRoute[]) => boolean = all_variants
+                    ? () => true
+                    : (value, index, array) =>
+                        value.variant.serviceType === get_main_service_type(array.map(a => a.variant), value.variant.route);
                 if (cached !== null) {
                     const result: StopRouteCacheType = JSON.parse(cached);
                     return result.map(
@@ -73,7 +83,7 @@ export default class Kmb {
                                 , item.sequence
                             );
                         }
-                    );
+                    ).filter(filter_stop_routes);
                 } else {
                     const json = await kmb.callApi(
                         {
@@ -81,66 +91,48 @@ export default class Kmb {
                             bsiCode: this.id
                         }
                     ) as { data: string[] };
-                    const map = new Map<Route, StopRoute[]>();
                     let remaining_routes = json.data.length;
                     if (update_count !== undefined) {
                         update_count(remaining_routes);
                     }
-                    await Promise.all(
+                    const results = (await Promise.all(
                         json.data.map(
                             async item => {
                                 const route_number = item.trim();
                                 // loop through each route and bound
                                 // let remaining_bounds = data.length;
-                                await Promise.all(
+                                const results = (await Promise.all(
                                     (await kmb.getRoutes(route_number)).map(
                                         async route =>
-                                            await Promise.all(
+                                            (await Promise.all(
                                                 (await route.getVariants()).map(
                                                     async variant =>
-                                                        (await variant.getStops()).forEach(
-                                                            inner_stop => {
-                                                                if (
-                                                                    inner_stop.id === this.id || this instanceof kmb.Stop
-                                                                    // some poles in the same bus terminus are missing words "Bus Terminus"
-                                                                    && (inner_stop.streetDirection === 'T' || inner_stop.name === this.name)
-                                                                    && inner_stop.streetId === this.streetId
-                                                                    && inner_stop.streetDirection === this.streetDirection
-                                                                ) {
-                                                                    // allow duplicate entries for the same variant but disallow multiple variants
-                                                                    const existing = map.get(variant.route);
-                                                                    const array =
-                                                                        existing === undefined
-                                                                        || variant.serviceType < existing[0].variant.serviceType
-                                                                        ? (() => {
-                                                                            const empty : StopRoute[] = [];
-                                                                            map.set(variant.route, empty);
-                                                                            return empty;
-                                                                        })()
-                                                                        : existing;
-                                                                    if (array.length === 0 || variant.serviceType === array[0].variant.serviceType) {
-                                                                        array.push(new kmb.StopRoute(inner_stop, variant, inner_stop.sequence));
-                                                                    }
-                                                                }
-                                                            }
+                                                        (await variant.getStops()).filter(
+                                                            inner_stop =>
+                                                                inner_stop.id === this.id || this instanceof kmb.Stop
+                                                                // some poles in the same bus terminus are missing words "Bus Terminus"
+                                                                && (inner_stop.streetDirection === 'T' || inner_stop.name === this.name)
+                                                                && inner_stop.streetId === this.streetId
+                                                                && inner_stop.streetDirection === this.streetDirection
                                                         )
+                                                            .map(inner_stop => new kmb.StopRoute(inner_stop, variant, inner_stop.sequence))
                                                 )
-                                            )
+                                            )).flat()
                                     )
-                                );
+                                )).flat();
                                 --remaining_routes;
                                 if (update_count !== undefined) {
                                     update_count(remaining_routes);
                                 }
+                                return results;
                             }
                         )
-                    );
-                    const results = Array.from(map.values()).flat();
+                    )).flat();
                     if (!(this instanceof kmb.Stop)) {
-                        return results[0].stop.getStopRoutes(update_count);
+                        return results[0].stop.getStopRoutes(all_variants, update_count);
                     } else {
                         stopRouteStorage?.setItem(`${this.id}_${kmb.language}`, JSON.stringify(results));
-                        return results;
+                        return results.filter(filter_stop_routes);
                     }
                 }
             }
