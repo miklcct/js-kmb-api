@@ -33,6 +33,7 @@
     },
     "scripts": {
         "build": "tsc",
+        "lint" : "eslint .",
         "test": "mocha",
         "clean": "rm -fr dist",
         "prepack": "npm run clean && npm run build && npm run test"
