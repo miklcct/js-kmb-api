@@ -11,9 +11,6 @@ type StopRoute = InstanceType<Kmb['StopRoute']>;
 type Eta = InstanceType<Kmb['Eta']>;
 
 export default class Kmb {
-    public proxyUrl = 'https://miklcct.com/proxy/';
-    public apiEndpoint = 'https://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx';
-
     public readonly IncompleteStop;
     public readonly Stop;
     public readonly Route;
@@ -21,7 +18,13 @@ export default class Kmb {
     public readonly StopRoute;
     public readonly Eta;
 
-    public constructor(public readonly language : Language = 'en', stopStorage? : Storage, stopRouteStorage? : Storage) {
+    public constructor(
+        public readonly language : Language = 'en'
+        , stopStorage? : Storage
+        , stopRouteStorage? : Storage
+        , public proxyUrl : string | null = null
+        , public apiEndpoint = 'https://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx'
+    ) {
         if (stopRouteStorage !== undefined && stopStorage === undefined) {
             throw new Error('Cannot use stopRouteStorage without stopStorage');
         }
@@ -342,14 +345,14 @@ export default class Kmb {
                 return (
                     kmb.Eta.mobileApiMethod === 'POST'
                         ? Axios.post(
-                        `${kmb.proxyUrl}https://etav3.kmb.hk/?action=geteta`
+                        `${kmb.proxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`
                         ,{
                             d: encrypted_query.apiKey,
                             ctr: encrypted_query.ctr
                         }
                         , {responseType : 'json'}
                         )
-                        : Axios.get(`${kmb.proxyUrl}https://etav3.kmb.hk/?action=geteta`, {params : query, responseType : 'json'})
+                        : Axios.get(`${kmb.proxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`, {params : query, responseType : 'json'})
                 ).then(
                     ({data : json} : {data : [{ eta: {t : string, eot : string, dis? : number}[]}?]}) =>
                         (json[0]?.eta ?? [])
