@@ -14,12 +14,14 @@
         "@testdeck/mocha": "^0.1.2",
         "@types/aes-js": "^3.1.1",
         "@types/chai": "^4.2.13",
+        "@types/chai-as-promised": "^7.1.3",
         "@types/mocha": "^8.0.3",
         "@types/sinon": "^9.0.8",
         "@types/source-map-support": "^0.5.3",
         "@typescript-eslint/eslint-plugin": "^4.4.1",
         "@typescript-eslint/parser": "^4.4.1",
         "chai": "^4.2.0",
+        "chai-as-promised": "^7.1.1",
         "eslint": "^7.11.0",
         "mocha": "^8.1.3",
         "mock-local-storage": "^1.1.15",
@@ -37,6 +39,6 @@
         "lint": "eslint .",
         "test": "mocha",
         "clean": "rm -fr dist",
-        "prepack": "npm run clean && npm run build && npm run lint && npm run test"
+        "prepack": "npm run clean && npm run build && npm run lint && TZ=UTC npm run test"
     }
 }

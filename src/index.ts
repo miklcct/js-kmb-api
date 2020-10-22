@@ -328,7 +328,7 @@ export default class Kmb {
             ) {
             }
 
-            async getEtas(retry_count = 5) : Promise<Eta[]> {
+            async getEtas(retry_count = 5, method : 'GET' | 'POST' = 'GET') : Promise<Eta[]> {
                 const secret = Secret.getSecret(`${new Date().toISOString().split('.')[0]}Z`);
                 const languages = {'en': 'en', 'zh-hans': 'sc', 'zh-hant': 'tc'};
                 const query = {
@@ -343,7 +343,7 @@ export default class Kmb {
                 };
                 const encrypted_query = Secret.getSecret(`?${new URLSearchParams(query).toString()}`, secret.ctr);
                 return (
-                    kmb.Eta.mobileApiMethod === 'POST'
+                    method === 'POST'
                         ? Axios.post(
                             `${kmb.proxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`
                             ,{
@@ -360,7 +360,7 @@ export default class Kmb {
                                 obj => (
                                     {
                                         time: obj.t.substr(0, 5),
-                                        remark: obj.t.substr(5),
+                                        remark: obj.t.substr(6),
                                         real_time: typeof obj.dis === 'number',
                                         distance: obj.dis,
                                     }
@@ -370,7 +370,7 @@ export default class Kmb {
                             .map(
                                 obj => {
                                     const time = new Date();
-                                    time.setHours(Number(obj.time.split(':')[0]), Number(obj.time.split(':')[1]), 0);
+                                    time.setUTCHours((Number(obj.time.split(':')[0]) + 24 - 8) % 24, Number(obj.time.split(':')[1]), 0);
                                     if (time.getTime() - Date.now() < -60 * 60 * 1000 * 2) {
                                         // the time is less than 2 hours past - assume midnight rollover
                                         time.setDate(time.getDate() + 1);
@@ -394,8 +394,6 @@ export default class Kmb {
         };
 
         this.Eta = class {
-            public static mobileApiMethod : 'GET' | 'POST' = 'GET';
-
             /**
              * Create an ETA entry
              *
