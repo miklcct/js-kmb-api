@@ -276,7 +276,19 @@ export class StopRouteTest extends TestCase {
                             responsecode : 0,
                             updated : 1603346890000,
                             generated : 1603346896767,
-                            eta : []
+                            eta : [
+                                {
+                                    w: "N",
+                                    ex: "2020-10-22 16:45:16",
+                                    eot: "T",
+                                    t: "No scheduled departure at this moment",
+                                    ei: null,
+                                    bus_service_type: 1,
+                                    wifi: null,
+                                    ol: "N",
+                                    dis: null
+                                }
+                            ]
                         }
                     ],
                     status : 200,
