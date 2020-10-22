@@ -345,12 +345,12 @@ export default class Kmb {
                 return (
                     kmb.Eta.mobileApiMethod === 'POST'
                         ? Axios.post(
-                        `${kmb.proxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`
-                        ,{
-                            d: encrypted_query.apiKey,
-                            ctr: encrypted_query.ctr
-                        }
-                        , {responseType : 'json'}
+                            `${kmb.proxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`
+                            ,{
+                                d: encrypted_query.apiKey,
+                                ctr: encrypted_query.ctr
+                            }
+                            , {responseType : 'json'}
                         )
                         : Axios.get(`${kmb.proxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`, {params : query, responseType : 'json'})
                 ).then(
