@@ -40,7 +40,7 @@ export default class Kmb {
             }
 
             public get name(): string | undefined {
-                return stopStorage === undefined ? undefined : stopStorage[`${this.id}_${kmb.language}`];
+                return stopStorage === undefined ? undefined : stopStorage.getItem(`${this.id}_${kmb.language}`) ?? undefined;
             }
 
             /**
@@ -60,7 +60,7 @@ export default class Kmb {
                     : (value, index, array) =>
                         value.variant.serviceType === get_main_service_type(array.map(a => a.variant), value.variant.route);
                 if (cached !== null) {
-                    const result: StopRouteCacheType = JSON.parse(cached);
+                    const result = JSON.parse(cached) as StopRouteCacheType;
                     return result.map(
                         item => {
                             const name = new kmb.IncompleteStop(item.stop.id).name;
@@ -367,9 +367,7 @@ export default class Kmb {
                                     }
                                 )
                             )
-                            .filter(
-                                obj =>
-                                    obj.time.match(/^[0-9][0-9]:[0-9][0-9]$/) !== null)
+                            .filter(obj => /^[0-9][0-9]:[0-9][0-9]$/.test(obj.time))
                             .map(
                                 obj => {
                                     const time = new Date();
@@ -440,11 +438,14 @@ export default class Kmb {
     }
 
     public async callApi(query: Record<string, string>): Promise<Record<string, unknown>> {
-        return (await Axios.get(this.apiEndpoint, {params: query, responseType: 'json'})).data;
+        return (await Axios.get(this.apiEndpoint, {params: query, responseType: 'json'})).data as Record<string, unknown>;
     }
 
     public static toTitleCase(string: string): string {
-        return string.toLowerCase().replace(/((^|[^a-z0-9'])+)(.)/g, (match, p1, p2, p3) => p1 + p3.toUpperCase());
+        return string.toLowerCase().replace(
+            /((^|[^a-z0-9'])+)(.)/g
+            , (match, p1 : string, p2 : string, p3 : string) => p1 + p3.toUpperCase()
+        );
     }
 }
 
