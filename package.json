@@ -1,7 +1,7 @@
 {
     "name": "js-kmb-api",
     "description": "Library for querying KMB data",
-    "version": "2.0.0-beta.7",
+    "version": "2.0.0-beta.8",
     "type": "module",
     "main": "dist/src/index.js",
     "types": "dist/src/index.d.ts",
