@@ -1,12 +1,7 @@
 import aesjs from "aes-js";
 
 export default class Secret {
-    public readonly apiKey : string;
-    public readonly ctr : number;
-
-    constructor(apiKey : string, ctr : number) {
-        this.apiKey = apiKey;
-        this.ctr = ctr;
+    constructor(public readonly apiKey : string, public readonly ctr : number) {
     }
 
     public static getSecret(string : string, counter = Math.floor(Math.random() * (1 << 30))) : Secret {
