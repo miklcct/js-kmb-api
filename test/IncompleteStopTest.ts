@@ -7,27 +7,27 @@ import Sinon from "sinon";
 @suite
 export class IncompleteStopTest extends TestCase {
     @test
-    streetIdIsParsedCorrectly() : void {
+    getStreetId() : void {
         assert.strictEqual(new (new Kmb).IncompleteStop('CA07-S-2800-0').streetId, 'CA07');
     }
 
     @test
-    streetDirectionIsParsedCorrecly() : void {
+    getStreetDirection() : void {
         assert.strictEqual(new (new Kmb).IncompleteStop('CA07-S-2800-0').streetDirection, 'S');
     }
 
     @test
-    nameIsUndefinedWithoutStorageIsEmpty() : void {
+    getNameWithoutStorage() : void {
         assert.isUndefined(new new Kmb().IncompleteStop('TS06-S-1000-0').name);
     }
 
     @test
-    nameIsUndefinedWhenStorageIsEmpty(): void {
+    getNameWithEmptyStorage(): void {
         assert.isUndefined(new new Kmb('en', new Storage).IncompleteStop('TS06-S-1000-0').name);
     }
 
     @test
-    nameIsReadFromStorage(): void {
+    getNameFromStorage(): void {
         const storage = new Storage;
         storage.setItem('TS06-S-1000-0_zh-hans', '青雲站');
         assert.strictEqual(new new Kmb('zh-hans', storage).IncompleteStop('TS06-S-1000-0').name, '青雲站');

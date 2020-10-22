@@ -48,7 +48,7 @@ export default class Kmb {
              * @param all_variants Specify this to be true to list all variants for the same route and direction, false for only the main one
              * @param update_count Specify this to update the progress of how many routes are remaining
              */
-            async getStopRoutes(all_variants = false, update_count?: (remaining: number) => void): Promise<StopRoute[]> {
+            public async getStopRoutes(all_variants = false, update_count?: (remaining: number) => void): Promise<StopRoute[]> {
                 const cached = stopRouteStorage?.getItem(`${this.id}_${kmb.language}`) ?? null;
                 const get_main_service_type = (variants: Variant[], route: Route): number =>
                     Math.min(
@@ -134,68 +134,26 @@ export default class Kmb {
             }
         };
 
+        this.Stop = class extends this.IncompleteStop {
+            public readonly routeDirection: string;
+            public readonly sequence: number;
+
+            constructor(id: string, name: string, routeDirection: string, sequence: number) {
+                super(id);
+                if (stopStorage !== undefined) {
+                    stopStorage[`${id}_${kmb.language}`] = name;
+                }
+                this.routeDirection = routeDirection;
+                this.sequence = sequence;
+            }
+        };
+
         this.Route = class {
             public constructor(public readonly number : string, public readonly bound : number) {
             }
 
-            /**
-             * Get a string in the format "Route-Bound"
-             * @returns {string}
-             */
             public getRouteBound(): string {
                 return `${this.number}-${this.bound}`;
-            }
-
-            /**
-             * Get the list of variants from a route
-             */
-            public async getVariants(): Promise<Variant[]> {
-                const json = await kmb.callApi(
-                    {
-                        action: 'getSpecialRoute',
-                        route: this.number,
-                        bound: String(this.bound),
-                    }
-                ) as {
-                    data: {
-                        CountSpecial: number, routes: {
-                            ServiceType: string,
-                            Origin_ENG: string, Destination_ENG: string, Desc_ENG: string
-                            Origin_CHI: string, Destination_CHI: string, Desc_CHI: string
-                        }[], result: boolean
-                    }
-                };
-                return json.data.routes.map(
-                    item => new kmb.Variant(
-                        this
-                        , Number(item.ServiceType)
-                        , Kmb.toTitleCase(
-                            item[
-                                {
-                                    'en': 'Origin_ENG',
-                                    'zh-hans': 'Origin_CHI',
-                                    'zh-hant': 'Origin_CHI'
-                                }[kmb.language] as keyof typeof json.data.routes[0]
-                                ]
-                        )
-                        , Kmb.toTitleCase(
-                            item[
-                                {
-                                    'en': 'Destination_ENG',
-                                    'zh-hans': 'Destination_CHI',
-                                    'zh-hant': 'Destination_CHI'
-                                }[kmb.language] as keyof typeof json.data.routes[0]
-                                ]
-                        )
-                        , item[
-                            {
-                                'en': 'Desc_ENG',
-                                'zh-hans': 'Desc_CHI',
-                                'zh-hant': 'Desc_CHI'
-                            }[kmb.language] as keyof typeof json.data.routes[0]
-                            ]
-                    )
-                );
             }
 
             public static compare(a: Route, b: Route): -1 | 0 | 1 {
@@ -249,6 +207,58 @@ export default class Kmb {
                 return a.number === b.number
                     ? a.bound > b.bound ? 1 : a.bound < b.bound ? -1 : 0
                     : compare_route_number(a.number, b.number);
+            }
+
+            /**
+             * Get the list of variants from a route
+             */
+            public async getVariants(): Promise<Variant[]> {
+                const json = await kmb.callApi(
+                    {
+                        action: 'getSpecialRoute',
+                        route: this.number,
+                        bound: String(this.bound),
+                    }
+                ) as {
+                    data: {
+                        CountSpecial: number, routes: {
+                            ServiceType: string,
+                            Origin_ENG: string, Destination_ENG: string, Desc_ENG: string
+                            Origin_CHI: string, Destination_CHI: string, Desc_CHI: string
+                        }[], result: boolean
+                    }
+                };
+                return json.data.routes.map(
+                    item => new kmb.Variant(
+                        this
+                        , Number(item.ServiceType)
+                        , Kmb.toTitleCase(
+                            item[
+                                {
+                                    'en': 'Origin_ENG',
+                                    'zh-hans': 'Origin_CHI',
+                                    'zh-hant': 'Origin_CHI'
+                                }[kmb.language] as keyof typeof json.data.routes[0]
+                                ]
+                        )
+                        , Kmb.toTitleCase(
+                            item[
+                                {
+                                    'en': 'Destination_ENG',
+                                    'zh-hans': 'Destination_CHI',
+                                    'zh-hant': 'Destination_CHI'
+                                }[kmb.language] as keyof typeof json.data.routes[0]
+                                ]
+                        )
+                        , item[
+                            {
+                                'en': 'Desc_ENG',
+                                'zh-hans': 'Desc_CHI',
+                                'zh-hant': 'Desc_CHI'
+                            }[kmb.language] as keyof typeof json.data.routes[0]
+                            ]
+                    )
+                );
             }
         };
 
@@ -304,20 +314,6 @@ export default class Kmb {
                         , Number(item.Seq)
                     )
                 );
-            }
-        };
-
-        this.Stop = class extends this.IncompleteStop {
-            public readonly routeDirection: string;
-            public readonly sequence: number;
-
-            constructor(id: string, name: string, routeDirection: string, sequence: number) {
-                super(id);
-                if (stopStorage !== undefined) {
-                    stopStorage[`${id}_${kmb.language}`] = name;
-                }
-                this.routeDirection = routeDirection;
-                this.sequence = sequence;
             }
         };
 
