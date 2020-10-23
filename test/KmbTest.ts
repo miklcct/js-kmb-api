@@ -1,6 +1,6 @@
 import nock from 'nock';
 import {TestCase} from "./TestCase";
-import {suite, test} from "@testdeck/mocha";
+import {suite, test, params} from "@testdeck/mocha";
 import Kmb from "../src";
 import Sinon from "sinon";
 import {assert} from "chai";
@@ -36,5 +36,13 @@ export class KmbTest extends TestCase {
         nock('https://search.kmb.hk/').get('/KMBWebSite/Function/FunctionRequest.ashx').query(query)
             .reply(200, result);
         assert.deepStrictEqual(await (new Kmb()).callApi(query), result);
+    }
+
+    @params(['SHAN KING', 'Shan King'], 'Simple Case')
+    @params(['WAN CHAI (HKCECE)', 'Wan Chai (Hkcece)'], 'With ()')
+    @params(['QUEEN\'S ROAD WEST', 'Queen\'s Road West'], 'With \'')
+    @params(['形點 II', '形點 Ii'], 'with Chinese')
+    @test toTitleCase([input, expected] : [string, string]) : void {
+        assert.strictEqual(Kmb.toTitleCase(input), expected);
     }
 }
