@@ -1,6 +1,8 @@
 # Node.js module for getting bus information of KMB
 This is a node.js module for getting bus service information of KMB routes. It can get routes, stops, variants, and ETAs.  
 
+[Try it out in RunKit](https://runkit.com/miklcct/5f93015edf489c001abca071)
+
 ## Example Usage
 ### Loading the library
 ```js
