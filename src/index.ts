@@ -73,22 +73,23 @@ export default class Kmb {
             /**
              * The "street" part of the ID, e.g. "AB01"
              */
-            public get streetId() : string{
+            public get streetId() : string {
                 return this.id.split('-')[0];
             }
 
             /**
              * The "direction" part of the ID, normally N, E, S, W for directions, K, C for circular road or T for terminus
              */
-            public get streetDirection(): string {
+            public get streetDirection() : string {
                 return this.id.split('-')[1];
             }
 
             /**
              * The name of the stop, undefined if it isn't in the cache
              */
-            public get name(): string | undefined {
-                return stopStorage === undefined ? undefined : stopStorage.getItem(`${this.id}_${kmb.language}`) ?? undefined;
+            public get name() : string | undefined {
+                return stopStorage === undefined ? undefined : stopStorage.getItem(`${this.id}_${kmb.language}`)
+                    ?? undefined;
             }
 
             /**
@@ -96,18 +97,28 @@ export default class Kmb {
              * @param all_variants Specify to be true to list all variants for the same route and direction, false for only the main one
              * @param update_count An optional callback to update the progress of how many routes are remaining
              */
-            public async getStoppings(all_variants = false, update_count?: (remaining: number) => void): Promise<Stopping[]> {
+            public async getStoppings(
+                all_variants = false,
+                update_count? : (remaining : number) => void
+            ) : Promise<Stopping[]> {
                 const initial_name = this.name;
                 const cached = stoppingStorage?.getItem(`${this.id}_${kmb.language}`) ?? null;
-                const get_main_service_type = (variants: Variant[], route: Route): number =>
+                const get_main_service_type = (variants : Variant[], route : Route) : number =>
                     Math.min(
                         ...variants.filter(a => a.route.getRouteBound() === route.getRouteBound())
                             .map(a => a.serviceType)
                     );
-                const filter_stop_routes: (value: Stopping, index: number, array: Stopping[]) => boolean = all_variants
+                const filter_stop_routes : (
+                    value : Stopping,
+                    index : number,
+                    array : Stopping[]
+                ) => boolean = all_variants
                     ? () => true
                     : (value, index, array) =>
-                        value.variant.serviceType === get_main_service_type(array.map(a => a.variant), value.variant.route);
+                        value.variant.serviceType === get_main_service_type(
+                        array.map(a => a.variant),
+                        value.variant.route
+                        );
                 if (cached !== null) {
                     const result = JSON.parse(cached) as StoppingCacheType;
                     return result.map(
@@ -134,47 +145,68 @@ export default class Kmb {
                 } else {
                     const json = await kmb.callApi(
                         {
-                            action: 'getRoutesInStop',
-                            bsiCode: this.id
+                            action : 'getRoutesInStop',
+                            bsiCode : this.id
                         }
-                    ) as { data: string[] };
+                    ) as {data : string[]};
                     let remaining_routes = json.data.length;
                     if (update_count !== undefined) {
                         update_count(remaining_routes);
                     }
-                    const results = (await Promise.all(
-                        json.data.map(
-                            async item => {
-                                const route_number = item.trim();
-                                // loop through each route and bound
-                                // let remaining_bounds = data.length;
-                                const results = (await Promise.all(
-                                    (await kmb.getRoutes(route_number)).map(
-                                        async route =>
-                                            (await Promise.all(
-                                                (await route.getVariants()).map(
-                                                    async variant =>
-                                                        (await variant.getStoppings()).filter(
-                                                            ({stop : inner_stop}) =>
-                                                                inner_stop.id === this.id
-                                                                || initial_name !== undefined
-                                                                    // some poles in the same bus terminus are missing words "Bus Terminus"
-                                                                    && (inner_stop.streetDirection === 'T' || inner_stop.name === initial_name)
-                                                                    && inner_stop.streetId === this.streetId
-                                                                    && inner_stop.streetDirection === this.streetDirection
+                    const results = (
+                        await Promise.all(
+                            json.data.map(
+                                async item => {
+                                    const route_number = item.trim();
+                                    // loop through each route and bound
+                                    // let remaining_bounds = data.length;
+                                    const results = (
+                                        await Promise.all(
+                                            (
+                                                await kmb.getRoutes(route_number)
+                                            ).map(
+                                                async route =>
+                                                    (
+                                                        await Promise.all(
+                                                            (
+                                                                await route.getVariants()
+                                                            ).map(
+                                                                async variant =>
+                                                                    (
+                                                                        await variant.getStoppings()
+                                                                    ).filter(
+                                                                        ({stop : inner_stop}) =>
+                                                                            inner_stop.id
+                                                                            === this.id
+                                                                            || initial_name
+                                                                            !== undefined
+                                                                            // some poles in the same bus terminus are missing words "Bus Terminus"
+                                                                            && (
+                                                                                inner_stop.streetDirection
+                                                                                === 'T'
+                                                                                || inner_stop.name
+                                                                                === initial_name
+                                                                            )
+                                                                            && inner_stop.streetId
+                                                                            === this.streetId
+                                                                            && inner_stop.streetDirection
+                                                                            === this.streetDirection
+                                                                    )
+                                                            )
                                                         )
-                                                )
-                                            )).flat()
-                                    )
-                                )).flat();
-                                --remaining_routes;
-                                if (update_count !== undefined) {
-                                    update_count(remaining_routes);
+                                                    ).flat()
+                                            )
+                                        )
+                                    ).flat();
+                                    --remaining_routes;
+                                    if (update_count !== undefined) {
+                                        update_count(remaining_routes);
+                                    }
+                                    return results;
                                 }
-                                return results;
-                            }
+                            )
                         )
-                    )).flat();
+                    ).flat();
                     if (initial_name === undefined) {
                         // when initial name is undefined the result may be incomplete
                         return results[0].stop.getStoppings(all_variants, update_count);
@@ -197,7 +229,7 @@ export default class Kmb {
             /**
              * @returns a string in forms of "Route-Bound" which can be used as an identifier, e.g. "58X-2"
              */
-            public getRouteBound(): string {
+            public getRouteBound() : string {
                 return `${this.number}-${this.bound}`;
             }
 
@@ -210,15 +242,16 @@ export default class Kmb {
              * @param a
              * @param b
              */
-            public static compare(a: Route, b: Route): -1 | 0 | 1 {
-                const compare_route_number = (a: string, b: string) => {
-                    const explode_segments = (route_id: string) => {
-                        const segments: string[] = [];
+            public static compare(a : Route, b : Route) : -1 | 0 | 1 {
+                const compare_route_number = (a : string, b : string) => {
+                    const explode_segments = (route_id : string) => {
+                        const segments : string[] = [];
                         [...route_id].forEach(
                             character => {
-                                function is_number(x: string) {
+                                function is_number(x : string) {
                                     return x >= '0' && x <= '9';
                                 }
+
                                 if (
                                     segments.length === 0
                                     || is_number(
@@ -234,8 +267,8 @@ export default class Kmb {
                         );
                         return segments;
                     };
-                    const a_segments : (string|number)[] = explode_segments(a);
-                    const b_segments : (string|number)[] = explode_segments(b);
+                    const a_segments : (string | number)[] = explode_segments(a);
+                    const b_segments : (string | number)[] = explode_segments(b);
                     let i = 0;
                     while (i < a_segments.length && i < b_segments.length) {
                         const is_a_number = !isNaN(Number(a_segments[i]));
@@ -247,8 +280,10 @@ export default class Kmb {
                             }
                             if (a_segments[i] < b_segments[i]) {
                                 return -1;
-                            } else if (b_segments[i] < a_segments[i]) {
-                                return 1;
+                            } else {
+                                if (b_segments[i] < a_segments[i]) {
+                                    return 1;
+                                }
                             }
                         } else {
                             return is_a_number > is_b_number ? -1 : 1;
@@ -263,20 +298,20 @@ export default class Kmb {
                     : compare_route_number(a.number, b.number);
             }
 
-            public async getVariants(): Promise<Variant[]> {
+            public async getVariants() : Promise<Variant[]> {
                 const json = await kmb.callApi(
                     {
-                        action: 'getSpecialRoute',
-                        route: this.number,
-                        bound: String(this.bound),
+                        action : 'getSpecialRoute',
+                        route : this.number,
+                        bound : String(this.bound),
                     }
                 ) as {
-                    data: {
-                        CountSpecial: number, routes: {
-                            ServiceType: string,
-                            Origin_ENG: string, Destination_ENG: string, Desc_ENG: string
-                            Origin_CHI: string, Destination_CHI: string, Desc_CHI: string
-                        }[], result: boolean
+                    data : {
+                        CountSpecial : number, routes : {
+                            ServiceType : string,
+                            Origin_ENG : string, Destination_ENG : string, Desc_ENG : string
+                            Origin_CHI : string, Destination_CHI : string, Desc_CHI : string
+                        }[], result : boolean
                     }
                 };
                 return json.data.routes.map(
@@ -286,28 +321,28 @@ export default class Kmb {
                         , Kmb.toTitleCase(
                             item[
                                 {
-                                    'en': 'Origin_ENG',
-                                    'zh-hans': 'Origin_CHI',
-                                    'zh-hant': 'Origin_CHI'
+                                    'en' : 'Origin_ENG',
+                                    'zh-hans' : 'Origin_CHI',
+                                    'zh-hant' : 'Origin_CHI'
                                 }[kmb.language] as keyof typeof json.data.routes[0]
-                            ]
+                                ]
                         )
                         , Kmb.toTitleCase(
                             item[
                                 {
-                                    'en': 'Destination_ENG',
-                                    'zh-hans': 'Destination_CHI',
-                                    'zh-hant': 'Destination_CHI'
+                                    'en' : 'Destination_ENG',
+                                    'zh-hans' : 'Destination_CHI',
+                                    'zh-hant' : 'Destination_CHI'
                                 }[kmb.language] as keyof typeof json.data.routes[0]
-                            ]
+                                ]
                         )
                         , item[
                             {
-                                'en': 'Desc_ENG',
-                                'zh-hans': 'Desc_CHI',
-                                'zh-hant': 'Desc_CHI'
+                                'en' : 'Desc_ENG',
+                                'zh-hans' : 'Desc_CHI',
+                                'zh-hant' : 'Desc_CHI'
                             }[kmb.language] as keyof typeof json.data.routes[0]
-                        ]
+                            ]
                     )
                 );
             }
@@ -324,11 +359,11 @@ export default class Kmb {
              * @param description The description of the variant, e.g. "Normal routeing"
              */
             constructor(
-                public readonly route: Route
-                , public readonly serviceType: number
-                , public readonly origin: string
-                , public readonly destination: string
-                , public readonly description: string
+                public readonly route : Route
+                , public readonly serviceType : number
+                , public readonly origin : string
+                , public readonly destination : string
+                , public readonly description : string
             ) {
             }
 
@@ -342,13 +377,13 @@ export default class Kmb {
             public async getStoppings() : Promise<Stopping[]> {
                 const json = await kmb.callApi(
                     {
-                        action: 'getstops',
-                        route: this.route.number,
-                        bound: String(this.route.bound),
-                        serviceType: String(this.serviceType)
+                        action : 'getstops',
+                        route : this.route.number,
+                        bound : String(this.route.bound),
+                        serviceType : String(this.serviceType)
                     }
                 ) as {
-                    data: {
+                    data : {
                         routeStops : {
                             BSICode : string,
                             Direction : string,
@@ -370,11 +405,11 @@ export default class Kmb {
                             , Kmb.toTitleCase(
                                 item[
                                     {
-                                        'en': 'EName',
-                                        'zh-hans': 'SCName',
-                                        'zh-hant': 'CName'
+                                        'en' : 'EName',
+                                        'zh-hans' : 'SCName',
+                                        'zh-hant' : 'CName'
                                     }[kmb.language] as keyof typeof item
-                                ]
+                                    ]
                             )
                         )
                         , this
@@ -396,48 +431,53 @@ export default class Kmb {
              */
             public constructor(
                 public readonly stop : Stop
-                , public readonly variant: Variant
+                , public readonly variant : Variant
                 , public readonly direction : string
-                , public readonly sequence: number
+                , public readonly sequence : number
                 , public readonly fare : number
             ) {
             }
 
             async getEtas(retry_count = 5, method : 'GET' | 'POST' = 'GET') : Promise<Eta[]> {
                 const secret = Secret.getSecret(`${new Date().toISOString().split('.')[0]}Z`);
-                const languages = {'en': 'en', 'zh-hans': 'sc', 'zh-hant': 'tc'};
+                const languages = {'en' : 'en', 'zh-hans' : 'sc', 'zh-hant' : 'tc'};
                 const query = {
-                    lang: languages[kmb.language],
-                    route: this.variant.route.number,
-                    bound: String(this.variant.route.bound),
-                    stop_seq: String(this.sequence),
-                    service_type: String(this.variant.serviceType),
-                    vendor_id: Secret.VENDOR_ID,
-                    apiKey: secret.apiKey,
-                    ctr: String(secret.ctr)
+                    lang : languages[kmb.language],
+                    route : this.variant.route.number,
+                    bound : String(this.variant.route.bound),
+                    stop_seq : String(this.sequence),
+                    service_type : String(this.variant.serviceType),
+                    vendor_id : Secret.VENDOR_ID,
+                    apiKey : secret.apiKey,
+                    ctr : String(secret.ctr)
                 };
                 const encrypted_query = Secret.getSecret(`?${new URLSearchParams(query).toString()}`, secret.ctr);
                 return (
                     method === 'POST'
                         ? Axios.post(
-                            `${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`
-                            ,{
-                                d: encrypted_query.apiKey,
-                                ctr: encrypted_query.ctr
-                            }
-                            , {responseType : 'json', httpsAgent : Kmb.httpsAgent}
+                        `${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`
+                        , {
+                            d : encrypted_query.apiKey,
+                            ctr : encrypted_query.ctr
+                        }
+                        , {responseType : 'json', httpsAgent : Kmb.httpsAgent}
                         )
-                        : Axios.get(`${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`, {params : query, responseType : 'json', httpsAgent : Kmb.httpsAgent})
+                        : Axios.get(
+                        `${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`,
+                        {params : query, responseType : 'json', httpsAgent : Kmb.httpsAgent}
+                        )
                 ).then(
-                    ({data : json} : {data : [{ eta: {t : string, eot : string, dis? : number}[]}?]}) =>
-                        (json[0]?.eta ?? [])
+                    ({data : json} : {data : [{eta : {t : string, eot : string, dis? : number}[]}?]}) =>
+                        (
+                            json[0]?.eta ?? []
+                        )
                             .map(
                                 obj => (
                                     {
-                                        time: obj.t.substr(0, 5),
-                                        remark: obj.t.substr(6),
-                                        real_time: typeof obj.dis === 'number',
-                                        distance: obj.dis,
+                                        time : obj.t.substr(0, 5),
+                                        remark : obj.t.substr(6),
+                                        real_time : typeof obj.dis === 'number',
+                                        distance : obj.dis,
                                     }
                                 )
                             )
@@ -445,7 +485,9 @@ export default class Kmb {
                             .map(
                                 obj => {
                                     const time = new Date();
-                                    time.setUTCHours((Number(obj.time.split(':')[0]) + 24 - 8) % 24, Number(obj.time.split(':')[1]), 0);
+                                    time.setUTCHours((
+                                        Number(obj.time.split(':')[0]) + 24 - 8
+                                    ) % 24, Number(obj.time.split(':')[1]), 0);
                                     if (time.getTime() - Date.now() < -60 * 60 * 1000 * 2) {
                                         // the time is less than 2 hours past - assume midnight rollover
                                         time.setDate(time.getDate() + 1);
@@ -502,15 +544,15 @@ export default class Kmb {
      *
      * @return 2 routes for bi-direction non-circular routes, 1 route for single-direction or circular routes, 0 for not found
      */
-    public async getRoutes(route_number: string): Promise<Route[]> {
+    public async getRoutes(route_number : string) : Promise<Route[]> {
         const json = await this.callApi(
             {
-                action: 'getroutebound',
-                route: route_number
+                action : 'getroutebound',
+                route : route_number
             }
-        ) as { data: { ROUTE: string, BOUND: number, SERVICE_TYPE: number }[] };
+        ) as {data : {ROUTE : string, BOUND : number, SERVICE_TYPE : number}[]};
         return json.data.map(({BOUND}) => BOUND)
-            .filter((value: number, index: number, array: number[]) => array.indexOf(value) === index)
+            .filter((value : number, index : number, array : number[]) => array.indexOf(value) === index)
             .map(bound => new this.Route(route_number, bound));
     }
 
@@ -518,25 +560,45 @@ export default class Kmb {
      * Call the FunctionRequest.ashx API on the search.kmb.hk website
      * @param query
      */
-    public async callApi(query: Record<string, string>): Promise<unknown> {
-        return (await Axios.get(this.apiEndpoint, {params: query, responseType: 'json'})).data as unknown;
+    public async callApi(query : Record<string, string>) : Promise<unknown> {
+        return (
+            await Axios.get(this.apiEndpoint, {params : query, responseType : 'json'})
+        ).data as unknown;
     }
 
-    public static toTitleCase(string: string): string {
+    public static toTitleCase(string : string) : string {
         return string.toLowerCase().replace(
             /((^|[^a-z0-9'])+)(.)/g
             , (match, p1 : string, p2 : string, p3 : string) => p1 + p3.toUpperCase()
         );
     }
 
-    private static readonly httpsAgent = (() => {
-        // rootCas has a caveat that it will automatically add certs into the global agent, labelled "backwards compat"
-        // in the source code. I don't want this behaviour happening here
-        const original = https.globalAgent.options.ca;
-        const result = new https.Agent({ca : rootCas.create().addFile(path.resolve(__dirname, '../cert.pem'))});
-        https.globalAgent.options.ca = original;
-        return result;
-    })();
+    private static readonly httpsAgent = (
+        () => {
+            // rootCas has a caveat that it will automatically add certs into the global agent, labelled "backwards compat"
+            // in the source code. I don't want this behaviour happening here
+            const wrapper = (f : (() => https.Agent)) => {
+                if (https.globalAgent !== undefined) {
+                    const original = https.globalAgent.options.ca;
+                    const result = f();
+                    https.globalAgent.options.ca = original;
+                    return result;
+                } else {
+                    return f();
+                }
+            };
+
+            return wrapper(
+                () => new https.Agent(
+                    {
+                    ca : __dirname !== undefined
+                        ? rootCas.create().addFile(path.resolve(__dirname, '../cert.pem'))
+                        : undefined
+                    }
+                )
+            );
+        }
+    )();
 }
 
 export {Language, Stop, Route, Variant, Stopping, Eta};
