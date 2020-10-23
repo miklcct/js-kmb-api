@@ -244,6 +244,7 @@ export class StopRouteTest extends TestCase {
             , new kmb.Variant(new kmb.Route('960', 2), 1, 'Wan Chai North', 'Tuen Mun (Kin Sang Estate)', '')
             , 'B'
             , 10
+            , 15.2
         );
         const results = await stop_route.getEtas(5, 'GET');
         assert.deepStrictEqual(
@@ -280,6 +281,7 @@ export class StopRouteTest extends TestCase {
             , new kmb.Variant(new kmb.Route('TRAM', 1), 2, 'Shau Kei Wan', '(Westbound) from Shau Kei Wan to Happy Valley', 'Tram Route(operated by Hongkong Tramways Limited)')
             , ''
             , 6
+            , 2.6
         );
         const results = await stop_route.getEtas(5, 'GET');
         assert.deepStrictEqual(results, []);
@@ -336,6 +338,7 @@ export class StopRouteTest extends TestCase {
             , new kmb.Variant(new kmb.Route('960', 2), 1, 'Wan Chai North', 'Tuen Mun (Kin Sang Estate)', '')
             , 'B'
             , 10
+            , 15.2
         );
         await stop_route.getEtas();
     }
@@ -381,6 +384,7 @@ export class StopRouteTest extends TestCase {
             , new kmb.Variant(new kmb.Route('960', 2), 1, 'Wan Chai North', 'Tuen Mun (Kin Sang Estate)', '')
             , 'B'
             , 10
+            , 15.2
         );
         await stop_route.getEtas();
     }
@@ -432,6 +436,7 @@ export class StopRouteTest extends TestCase {
             , new kmb.Variant(new kmb.Route('960', 2), 1, 'Wan Chai North', 'Tuen Mun (Kin Sang Estate)', '')
             , 'B'
             , 10
+            , 15.2
         );
         await stop_route.getEtas(5, 'POST');
     }
@@ -486,6 +491,7 @@ export class StopRouteTest extends TestCase {
             , new kmb.Variant(new kmb.Route('960', 2), 1, 'Wan Chai North', 'Tuen Mun (Kin Sang Estate)', '')
             , 'B'
             , 10
+            , 15.2
         );
         return stop_route;
     }

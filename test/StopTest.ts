@@ -68,6 +68,7 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
             ],
             all_variants: false,
@@ -92,6 +93,7 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
             ],
             all_variants: false,
@@ -117,6 +119,7 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
             ],
             all_variants: false,
@@ -142,12 +145,14 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
                 new (new Kmb).Stopping(
                     new (new Kmb).Stop('YY88-T-8899-8', 'Another stop')
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 1
+                    , 0.0
                 ),
             ],
             all_variants: false,
@@ -173,12 +178,14 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
                 new (new Kmb).Stopping(
                     new (new Kmb).Stop('YY88-Y-8888-8', 'This stop')
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 1
+                    , 0.0
                 ),
             ],
             all_variants: false,
@@ -204,12 +211,14 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
                 new (new Kmb).Stopping(
                     new (new Kmb).Stop('YY88-Y-8899-8', 'This stop')
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 1
+                    , 0.0
                 ),
             ],
             all_variants: false,
@@ -235,6 +244,7 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
             ],
             all_variants: false,
@@ -260,6 +270,7 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
             ],
             all_variants: false,
@@ -287,6 +298,7 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 2, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
             ],
             all_variants: false,
@@ -314,6 +326,7 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 2, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
             ],
             all_variants: false,
@@ -341,12 +354,14 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 2, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
                 new (new Kmb).Stopping(
                     new (new Kmb).Stop('YY88-Y-8888-8', 'This stop')
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 3, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
             ],
             all_variants: true,
@@ -374,12 +389,14 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 2, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
                 new (new Kmb).Stopping(
                     new (new Kmb).Stop('YY88-Y-8899-8', 'This stop')
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 3, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
             ],
             all_variants: true,
@@ -409,12 +426,14 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
                 new (new Kmb).Stopping(
                     new (new Kmb).Stop('YY88-Y-8899-8', 'This stop')
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 2), 1, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
             ],
             all_variants: false,
@@ -446,12 +465,14 @@ export class StopTest extends TestCase {
                     , new (new Kmb).Variant(new (new Kmb).Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 ),
                 new (new Kmb).Stopping(
                     new (new Kmb).Stop('YY88-Y-8899-8', 'This stop')
                     , new (new Kmb).Variant(new (new Kmb).Route('1B', 2), 3, '', '', '')
                     , 'F'
                     , 5
+                    , 0.0
                 ),
             ],
             all_variants: false,
@@ -489,7 +510,13 @@ export class StopTest extends TestCase {
                                                 .returns(
                                                     Promise.resolve(
                                                         Object.entries(variant_details).map(
-                                                            ([key, value]) => new kmb.Stopping(new kmb.Stop(value.id, value.name), variant, 'F', Number(key))
+                                                            ([key, value]) => new kmb.Stopping(
+                                                                new kmb.Stop(value.id, value.name)
+                                                                , variant
+                                                                , 'F'
+                                                                , Number(key)
+                                                                , 0.0
+                                                            )
                                                         )
                                                     )
                                                 );
@@ -524,12 +551,14 @@ export class StopTest extends TestCase {
                 , new kmb.Variant(new kmb.Route('1A', 1), 1, '', '', '')
                 , 'F'
                 , 0
+                , 0.0
             ),
             new kmb.Stopping(
                 new kmb.Stop('YY88-Y-8888-8', 'This stop')
                 , new kmb.Variant(new kmb.Route('1A', 1), 2, '', '', '')
                 , 'F'
                 , 0
+                , 0.0
             ),
         ];
         storage.setItem(
@@ -548,6 +577,7 @@ export class StopTest extends TestCase {
                     , new kmb.Variant(new kmb.Route('1A', 1), 1, '', '', '')
                     , 'F'
                     , 0
+                    , 0.0
                 )
             ]
         );

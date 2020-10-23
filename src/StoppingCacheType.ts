@@ -8,5 +8,6 @@ export type StoppingCacheType = {
         description: string,
     },
     direction : string,
-    sequence: number
+    sequence: number,
+    fare : number,
 }[];

@@ -1,18 +1,37 @@
+import https = require('https');
+import path = require('path');
+import StorageShim = require('node-storage-shim');
+import rootCas = require('ssl-root-cas/latest');
 import Axios from "axios";
+
 import {Language} from "./Language";
 import Secret from "./Secret";
 import {StoppingCacheType} from "./StoppingCacheType";
-import https = require('https');
-import StorageShim = require('node-storage-shim');
-import path = require('path');
-import rootCas = require('ssl-root-cas/latest');
 
+/**
+ * A stop which consists of its ID and name
+ */
 type Stop = InstanceType<Kmb['Stop']>;
+/**
+ * A route which consists of its route number (e.g. 104) and its bound (1 for forward, 2 for backward)
+ */
 type Route = InstanceType<Kmb['Route']>;
+/**
+ * A variant, identified by the route and the variant number (service type)
+ */
 type Variant = InstanceType<Kmb['Variant']>;
+/**
+ * An instance which a variant stops at a bus stop
+ */
 type Stopping = InstanceType<Kmb['Stopping']>;
+/**
+ * An ETA entry
+ */
 type Eta = InstanceType<Kmb['Eta']>;
 
+/**
+ * main KMB API class
+ */
 export default class Kmb {
     public readonly Stop;
     public readonly Route;
@@ -22,11 +41,25 @@ export default class Kmb {
 
     private readonly apiEndpoint = 'https://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx';
 
+    /**
+     * Construct an API instance
+     * @param language
+     * @param stopStorage The cache used for storing stop names (suggest localStorage in browser). If not specified an in-memory store is used.
+     * @param stoppingStorage The cache used for storing stoppings (suggest sessionStorage in browser)
+     * @param corsProxyUrl If specified all ETA requests will go through the CORS proxy. Required to get ETAs in browser.
+     *
+     * @example
+     * // construct an English API in Node.js
+     * const api = new Kmb();
+     * @example
+     * // construct a simplified Chinese API in the browser
+     * const api = new Kmb('zh-hans', localStorage, sessionStorage, 'https://cors-anywhere.herokuapp.com/')
+     */
     public constructor(
         public readonly language : Language = 'en'
         , stopStorage : Storage = new StorageShim()
-        , stopRouteStorage? : Storage
-        , public proxyUrl : string | null = null
+        , stoppingStorage? : Storage
+        , public corsProxyUrl : string | null = null
     ) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const kmb = this;
@@ -37,26 +70,35 @@ export default class Kmb {
                 }
             }
 
+            /**
+             * The "street" part of the ID, e.g. "AB01"
+             */
             public get streetId() : string{
                 return this.id.split('-')[0];
             }
 
+            /**
+             * The "direction" part of the ID, normally N, E, S, W for directions, K, C for circular road or T for terminus
+             */
             public get streetDirection(): string {
                 return this.id.split('-')[1];
             }
 
+            /**
+             * The name of the stop, undefined if it isn't in the cache
+             */
             public get name(): string | undefined {
                 return stopStorage === undefined ? undefined : stopStorage.getItem(`${this.id}_${kmb.language}`) ?? undefined;
             }
 
             /**
              * Get the list of route variants serving a particular stop
-             * @param all_variants Specify this to be true to list all variants for the same route and direction, false for only the main one
-             * @param update_count Specify this to update the progress of how many routes are remaining
+             * @param all_variants Specify to be true to list all variants for the same route and direction, false for only the main one
+             * @param update_count An optional callback to update the progress of how many routes are remaining
              */
             public async getStoppings(all_variants = false, update_count?: (remaining: number) => void): Promise<Stopping[]> {
                 const initial_name = this.name;
-                const cached = stopRouteStorage?.getItem(`${this.id}_${kmb.language}`) ?? null;
+                const cached = stoppingStorage?.getItem(`${this.id}_${kmb.language}`) ?? null;
                 const get_main_service_type = (variants: Variant[], route: Route): number =>
                     Math.min(
                         ...variants.filter(a => a.route.getRouteBound() === route.getRouteBound())
@@ -85,6 +127,7 @@ export default class Kmb {
                                 )
                                 , item.direction
                                 , item.sequence
+                                , item.fare
                             );
                         }
                     ).filter(filter_stop_routes);
@@ -136,7 +179,7 @@ export default class Kmb {
                         // when initial name is undefined the result may be incomplete
                         return results[0].stop.getStoppings(all_variants, update_count);
                     } else {
-                        stopRouteStorage?.setItem(`${this.id}_${kmb.language}`, JSON.stringify(results));
+                        stoppingStorage?.setItem(`${this.id}_${kmb.language}`, JSON.stringify(results));
                         return results.filter(filter_stop_routes);
                     }
                 }
@@ -144,13 +187,29 @@ export default class Kmb {
         };
 
         this.Route = class {
+            /**
+             * @param number The route number, e.g. 104
+             * @param bound The bound, normally 1 for forward, 2 for backward
+             */
             public constructor(public readonly number : string, public readonly bound : number) {
             }
 
+            /**
+             * @returns a string in forms of "Route-Bound" which can be used as an identifier, e.g. "58X-2"
+             */
             public getRouteBound(): string {
                 return `${this.number}-${this.bound}`;
             }
 
+            /**
+             * Compares the routes according to human's expectation
+             *
+             * The routes are sorted according to its letter prefix, the number part sorted naturally, and the letter suffix.
+             * If the route numbers are the same, the bounds are compared
+             *
+             * @param a
+             * @param b
+             */
             public static compare(a: Route, b: Route): -1 | 0 | 1 {
                 const compare_route_number = (a: string, b: string) => {
                     const explode_segments = (route_id: string) => {
@@ -204,9 +263,6 @@ export default class Kmb {
                     : compare_route_number(a.number, b.number);
             }
 
-            /**
-             * Get the list of variants from a route
-             */
             public async getVariants(): Promise<Variant[]> {
                 const json = await kmb.callApi(
                     {
@@ -276,6 +332,9 @@ export default class Kmb {
             ) {
             }
 
+            /**
+             * @returns a string in form of "origin → destination"
+             */
             public getOriginDestinationString() : string {
                 return `${this.origin} → ${this.destination}`;
             }
@@ -290,7 +349,18 @@ export default class Kmb {
                     }
                 ) as {
                     data: {
-                        routeStops: { BSICode: string, Direction: string, Seq: string, EName: string, SCName: string, CName: string }[]
+                        routeStops : {
+                            BSICode : string,
+                            Direction : string,
+                            Seq : string,
+                            EName : string,
+                            SCName : string,
+                            CName : string,
+                            ELocation : string,
+                            SCLocation : string,
+                            CLocation : string,
+                            AirFare : string,
+                        }[]
                     }
                 };
                 return json.data.routeStops.map(
@@ -310,17 +380,26 @@ export default class Kmb {
                         , this
                         , item.Direction.trim()
                         , Number(item.Seq)
+                        , Number(item.AirFare)
                     )
                 );
             }
         };
 
         this.Stopping = class {
+            /**
+             * @param stop
+             * @param variant
+             * @param direction A string specifying whether the stop is in forward (F) or backward (B) direction of the route
+             * @param sequence The order of the stopping in the variant
+             * @param fare
+             */
             public constructor(
                 public readonly stop : Stop
                 , public readonly variant: Variant
                 , public readonly direction : string
                 , public readonly sequence: number
+                , public readonly fare : number
             ) {
             }
 
@@ -341,14 +420,14 @@ export default class Kmb {
                 return (
                     method === 'POST'
                         ? Axios.post(
-                            `${kmb.proxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`
+                            `${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`
                             ,{
                                 d: encrypted_query.apiKey,
                                 ctr: encrypted_query.ctr
                             }
                             , {responseType : 'json', httpsAgent : Kmb.httpsAgent}
                         )
-                        : Axios.get(`${kmb.proxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`, {params : query, responseType : 'json', httpsAgent : Kmb.httpsAgent})
+                        : Axios.get(`${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`, {params : query, responseType : 'json', httpsAgent : Kmb.httpsAgent})
                 ).then(
                     ({data : json} : {data : [{ eta: {t : string, eot : string, dis? : number}[]}?]}) =>
                         (json[0]?.eta ?? [])
@@ -393,14 +472,14 @@ export default class Kmb {
             /**
              * Create an ETA entry
              *
-             * @param stopRoute The stop-route where the ETA was queried
+             * @param stopping The stop-route where the ETA was queried
              * @param time The ETA time
              * @param distance The distance (in metres) of the bus from the stop
              * @param remark The remark of the ETA (e.g. KMB/NWFB, Scheduled)
              * @param realTime If the ETA is real-time
              */
             public constructor(
-                public readonly stopRoute : Stopping
+                public readonly stopping : Stopping
                 , public readonly time : Date
                 , public readonly distance : number | undefined
                 , public readonly remark : string
@@ -418,6 +497,11 @@ export default class Kmb {
         };
     }
 
+    /**
+     * Get the routes of that route number
+     *
+     * @return 2 routes for bi-direction non-circular routes, 1 route for single-direction or circular routes, 0 for not found
+     */
     public async getRoutes(route_number: string): Promise<Route[]> {
         const json = await this.callApi(
             {
@@ -430,6 +514,10 @@ export default class Kmb {
             .map(bound => new this.Route(route_number, bound));
     }
 
+    /**
+     * Call the FunctionRequest.ashx API on the search.kmb.hk website
+     * @param query
+     */
     public async callApi(query: Record<string, string>): Promise<unknown> {
         return (await Axios.get(this.apiEndpoint, {params: query, responseType: 'json'})).data as unknown;
     }

@@ -136,6 +136,7 @@ export class VariantTest extends TestCase {
                     , variant
                     , item.Direction.trim()
                     , Number(item.Seq)
+                    , Number(item.AirFare)
                 )
             )
             , stoppings
