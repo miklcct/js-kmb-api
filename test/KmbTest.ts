@@ -1,3 +1,4 @@
+import nock from 'nock';
 import {TestCase} from "./TestCase";
 import {suite, test} from "@testdeck/mocha";
 import Kmb from "../src";
@@ -26,5 +27,14 @@ export class KmbTest extends TestCase {
         const result = await kmb.getRoutes('104');
         assert(api_stub.calledWithExactly({action : 'getroutebound', route : '104'}));
         assert.sameDeepMembers(result, [new kmb.Route('104', 1), new kmb.Route('104', 2)]);
+    }
+
+    @test
+    async callApi() : Promise<void> {
+        const result = ['foo', 'bar', 'baz'];
+        const query = {foo : 'bar'};
+        nock('https://search.kmb.hk/').get('/KMBWebSite/Function/FunctionRequest.ashx').query(query)
+            .reply(200, result);
+        assert.deepStrictEqual(await (new Kmb()).callApi(query), result);
     }
 }

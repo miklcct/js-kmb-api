@@ -253,6 +253,36 @@ export class StopRouteTest extends TestCase {
     }
 
     @test
+    async getEtasForTram() : Promise<void> {
+        Sinon.stub(Secret, 'getSecret')
+            .returns(new Secret('A06F1CC2A3A43BD8B7A80846F7D65501AE1503A9', 1043206738));
+        nock('https://etav3.kmb.hk').get('/').query(
+            {
+                action : 'geteta',
+                lang : 'en',
+                route : 'TRAM',
+                bound : '1',
+                stop_seq : '6',
+                service_type : '2',
+                vendor_id : Secret.VENDOR_ID,
+                apiKey : 'A06F1CC2A3A43BD8B7A80846F7D65501AE1503A9',
+                ctr : '1043206738',
+            }
+        ).reply(
+            200
+            , [null]
+        );
+        const kmb = new Kmb();
+        const stop_route = new kmb.StopRoute(
+            new kmb.Stop('TR01-W-1012-0', 'Tai Koo Shing Road', '', 6)
+            , new kmb.Variant(new kmb.Route('TRAM', 1), 2, 'Shau Kei Wan', '(Westbound) from Shau Kei Wan to Happy Valley', 'Tram Route(operated by Hongkong Tramways Limited)')
+            , 6
+        );
+        const results = await stop_route.getEtas(5, 'GET');
+        assert.deepStrictEqual(results, []);
+    }
+
+    @test
     async getEtasWithFailures() : Promise<void> {
         const stop_route = StopRouteTest.setUpFailureCalls();
         const results = await stop_route.getEtas(3, 'GET');

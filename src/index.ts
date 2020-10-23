@@ -435,8 +435,8 @@ export default class Kmb {
             .map(bound => new this.Route(route_number, bound));
     }
 
-    public async callApi(query: Record<string, string>): Promise<Record<string, unknown>> {
-        return (await Axios.get(this.apiEndpoint, {params: query, responseType: 'json'})).data as Record<string, unknown>;
+    public async callApi(query: Record<string, string>): Promise<unknown> {
+        return (await Axios.get(this.apiEndpoint, {params: query, responseType: 'json'})).data as unknown;
     }
 
     public static toTitleCase(string: string): string {
