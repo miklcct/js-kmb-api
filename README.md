@@ -3,11 +3,11 @@ This is a library for getting KMB data. It can get routes, stops, variants, and 
 
 ## Example Usage
 ### Loading the library
-```typescript
+```js
 // load the main API class
 import Kmb from "js-kmb-api";
 // load the type definitions
-import {Language, Stop, IncompleteStop, Route, Variant, StopRoute, Eta} from "js-kmb-api"
+import {Language, Stop, Stop, Route, Variant, StopRoute, Eta} from "js-kmb-api"
 ```
 
 ### Using the library
@@ -19,6 +19,23 @@ const kmb = new Kmb('en', localStorage, sessionStorage);
 
 // create an API instance without caching
 const kmb_no_cache = new Kmb('zh-hans');
+
+// Load the routes (directions) named '104'
+const routes = await kmb.getRoutes('104');
+
+// Load the main variant of the forward direction
+const variants = await routes.filter(route => route.bound === 1).getVariants();
+const variant = await variants.sort((a, b) => a.serviceType - b.serviceType)[0];
+
+// Load the stop list of the main variant
+const stoppings = await variant.getStoppings();
+
+// Find a stop called "Immigration Tower"
+const stopping = stoppings.find(stopping => stopping.stop.name === 'Immigration Tower');
+
+// Get the ETA there
+const etas = await stopping.getEtas(); 
+
 ````
 
 ## Classes
@@ -32,7 +49,7 @@ The name is stored in localStorage automatically.
 
 Calling `Stop.get` with a variant will return the stop list of that variant.
 
-### `IncompleteStop`
+### `Stop`
 Represents a stop with ID only. The name property is retrieved from localStorage by `Stop`
 
 

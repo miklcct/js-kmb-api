@@ -1,21 +1,19 @@
-import {Language} from "./Language";
-import {StopRouteCacheType} from "./StopRouteCacheType";
-import Secret from "./Secret";
 import Axios from "axios";
+import {Language} from "./Language";
+import Secret from "./Secret";
+import {StoppingCacheType} from "./StoppingCacheType";
 
-type IncompleteStop = InstanceType<Kmb['IncompleteStop']>;
+type Stop = InstanceType<Kmb['Stop']>;
 type Route = InstanceType<Kmb['Route']>;
 type Variant = InstanceType<Kmb['Variant']>;
-type Stop = InstanceType<Kmb['Stop']>;
-type StopRoute = InstanceType<Kmb['StopRoute']>;
+type Stopping = InstanceType<Kmb['Stopping']>;
 type Eta = InstanceType<Kmb['Eta']>;
 
 export default class Kmb {
-    public readonly IncompleteStop;
     public readonly Stop;
     public readonly Route;
     public readonly Variant;
-    public readonly StopRoute;
+    public readonly Stopping;
     public readonly Eta;
 
     private readonly apiEndpoint = 'https://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx';
@@ -31,8 +29,11 @@ export default class Kmb {
         }
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const kmb = this;
-        this.IncompleteStop = class {
-            public constructor(public readonly id : string) {
+        this.Stop = class {
+            public constructor(public readonly id : string, name? : string) {
+                if (stopStorage !== undefined && name !== undefined) {
+                    stopStorage[`${id}_${kmb.language}`] = name;
+                }
             }
 
             public get streetId() : string{
@@ -52,27 +53,27 @@ export default class Kmb {
              * @param all_variants Specify this to be true to list all variants for the same route and direction, false for only the main one
              * @param update_count Specify this to update the progress of how many routes are remaining
              */
-            public async getStopRoutes(all_variants = false, update_count?: (remaining: number) => void): Promise<StopRoute[]> {
+            public async getStoppings(all_variants = false, update_count?: (remaining: number) => void): Promise<Stopping[]> {
                 const cached = stopRouteStorage?.getItem(`${this.id}_${kmb.language}`) ?? null;
                 const get_main_service_type = (variants: Variant[], route: Route): number =>
                     Math.min(
                         ...variants.filter(a => a.route.getRouteBound() === route.getRouteBound())
                             .map(a => a.serviceType)
                     );
-                const filter_stop_routes: (value: StopRoute, index: number, array: StopRoute[]) => boolean = all_variants
+                const filter_stop_routes: (value: Stopping, index: number, array: Stopping[]) => boolean = all_variants
                     ? () => true
                     : (value, index, array) =>
                         value.variant.serviceType === get_main_service_type(array.map(a => a.variant), value.variant.route);
                 if (cached !== null) {
-                    const result = JSON.parse(cached) as StopRouteCacheType;
+                    const result = JSON.parse(cached) as StoppingCacheType;
                     return result.map(
                         item => {
-                            const name = new kmb.IncompleteStop(item.stop.id).name;
+                            const name = new kmb.Stop(item.stop.id).name;
                             if (name === undefined) {
                                 throw new Error('Attempting to load StopRoute cache but stop name can\'t be found');
                             }
-                            return new kmb.StopRoute(
-                                new kmb.Stop(item.stop.id, name, item.stop.routeDirection, item.stop.sequence)
+                            return new kmb.Stopping(
+                                new kmb.Stop(item.stop.id, name)
                                 , new kmb.Variant(
                                     new kmb.Route(item.variant.route.number, item.variant.route.bound)
                                     , item.variant.serviceType
@@ -80,6 +81,7 @@ export default class Kmb {
                                     , item.variant.destination
                                     , item.variant.description
                                 )
+                                , item.routeDirection
                                 , item.sequence
                             );
                         }
@@ -107,15 +109,15 @@ export default class Kmb {
                                             (await Promise.all(
                                                 (await route.getVariants()).map(
                                                     async variant =>
-                                                        (await variant.getStops()).filter(
-                                                            inner_stop =>
-                                                                inner_stop.id === this.id || this instanceof kmb.Stop
-                                                                // some poles in the same bus terminus are missing words "Bus Terminus"
-                                                                && (inner_stop.streetDirection === 'T' || inner_stop.name === this.name)
-                                                                && inner_stop.streetId === this.streetId
-                                                                && inner_stop.streetDirection === this.streetDirection
+                                                        (await variant.getStoppings()).filter(
+                                                            ({stop : inner_stop}) =>
+                                                                inner_stop.id === this.id
+                                                                || this.name !== undefined
+                                                                    // some poles in the same bus terminus are missing words "Bus Terminus"
+                                                                    && (inner_stop.streetDirection === 'T' || inner_stop.name === this.name)
+                                                                    && inner_stop.streetId === this.streetId
+                                                                    && inner_stop.streetDirection === this.streetDirection
                                                         )
-                                                            .map(inner_stop => new kmb.StopRoute(inner_stop, variant, inner_stop.sequence))
                                                 )
                                             )).flat()
                                     )
@@ -128,27 +130,14 @@ export default class Kmb {
                             }
                         )
                     )).flat();
-                    if (!(this instanceof kmb.Stop)) {
-                        return results[0].stop.getStopRoutes(all_variants, update_count);
+                    if (this.name === undefined) {
+                        // when name is undefined the result may be incomplete
+                        return results[0].stop.getStoppings(all_variants, update_count);
                     } else {
                         stopRouteStorage?.setItem(`${this.id}_${kmb.language}`, JSON.stringify(results));
                         return results.filter(filter_stop_routes);
                     }
                 }
-            }
-        };
-
-        this.Stop = class extends this.IncompleteStop {
-            public readonly routeDirection: string;
-            public readonly sequence: number;
-
-            constructor(id: string, name: string, routeDirection: string, sequence: number) {
-                super(id);
-                if (stopStorage !== undefined) {
-                    stopStorage[`${id}_${kmb.language}`] = name;
-                }
-                this.routeDirection = routeDirection;
-                this.sequence = sequence;
             }
         };
 
@@ -289,7 +278,7 @@ export default class Kmb {
                 return `${this.origin} → ${this.destination}`;
             }
 
-            public async getStops() : Promise<Stop[]> {
+            public async getStoppings() : Promise<Stopping[]> {
                 const json = await kmb.callApi(
                     {
                         action: 'getstops',
@@ -303,17 +292,20 @@ export default class Kmb {
                     }
                 };
                 return json.data.routeStops.map(
-                    item => new kmb.Stop(
-                        item.BSICode
-                        , Kmb.toTitleCase(
-                            item[
-                                {
-                                    'en': 'EName',
-                                    'zh-hans': 'SCName',
-                                    'zh-hant': 'CName'
-                                }[kmb.language] as keyof typeof item
+                    item => new kmb.Stopping(
+                        new kmb.Stop(
+                            item.BSICode
+                            , Kmb.toTitleCase(
+                                item[
+                                    {
+                                        'en': 'EName',
+                                        'zh-hans': 'SCName',
+                                        'zh-hant': 'CName'
+                                    }[kmb.language] as keyof typeof item
                                 ]
+                            )
                         )
+                        , this
                         , item.Direction.trim()
                         , Number(item.Seq)
                     )
@@ -321,10 +313,11 @@ export default class Kmb {
             }
         };
 
-        this.StopRoute = class {
+        this.Stopping = class {
             public constructor(
                 public readonly stop : Stop
                 , public readonly variant: Variant
+                , public readonly direction : string
                 , public readonly sequence: number
             ) {
             }
@@ -405,7 +398,7 @@ export default class Kmb {
              * @param realTime If the ETA is real-time
              */
             public constructor(
-                public readonly stopRoute : StopRoute
+                public readonly stopRoute : Stopping
                 , public readonly time : Date
                 , public readonly distance : number | undefined
                 , public readonly remark : string
@@ -447,4 +440,4 @@ export default class Kmb {
     }
 }
 
-export {Language, IncompleteStop, Stop, Route, Variant, StopRoute, Eta};
+export {Language, Stop, Route, Variant, Stopping, Eta};

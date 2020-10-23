@@ -1,5 +1,5 @@
-export type StopRouteCacheType = {
-    stop: { id: string, routeDirection: string, sequence: number },
+export type StoppingCacheType = {
+    stop: { id: string },
     variant: {
         route: { number: string, bound: number },
         serviceType: number,
@@ -7,5 +7,6 @@ export type StopRouteCacheType = {
         destination: string,
         description: string,
     },
+    routeDirection : string,
     sequence: number
 }[];

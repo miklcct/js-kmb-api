@@ -25,7 +25,7 @@ export class VariantTest extends TestCase {
     @params(['zh-hant', 'CName'], 'get traditional Chinese stop list')
     @params(['zh-hans', 'SCName'], 'get simplified Chinese stop list')
     @test
-    async getStops([language, column]: [Language, string]): Promise<void> {
+    async getStoppings([language, column]: [Language, string]): Promise<void> {
         const json = {
             "data": {
                 "basicInfo": {
@@ -126,13 +126,19 @@ export class VariantTest extends TestCase {
         };
         const kmb = new Kmb(language);
         const api_stub = Sinon.stub(kmb, 'callApi').returns(Promise.resolve(json));
-        const stops = await new kmb.Variant(new kmb.Route('71B', 1), 1, '大埔(富亨)', '大埔中心(循環線)', '').getStops();
+        const variant = new kmb.Variant(new kmb.Route('71B', 1), 1, '大埔(富亨)', '大埔中心(循環線)', '');
+        const stoppings = await variant.getStoppings();
         assert(api_stub.calledWithExactly({action: 'getstops', route: '71B', bound: '1', serviceType: '1'}));
         assert.deepStrictEqual(
             json.data.routeStops.map(
-                item => new kmb.Stop(item.BSICode, item[column as keyof typeof item], item.Direction.trim(), Number(item.Seq))
+                item => new kmb.Stopping(
+                    new kmb.Stop(item.BSICode, item[column as keyof typeof item])
+                    , variant
+                    , item.Direction.trim()
+                    , Number(item.Seq)
+                )
             )
-            , stops
+            , stoppings
         );
     }
 }

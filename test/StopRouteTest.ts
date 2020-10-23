@@ -2,7 +2,7 @@ import {params, suite, test} from '@testdeck/mocha';
 import {assert} from 'chai';
 import nock from 'nock';
 import Sinon, {SinonFakeTimers} from 'sinon';
-import Kmb, {Language, StopRoute} from '../src';
+import Kmb, {Language, Stopping} from '../src';
 import Secret from '../src/Secret';
 import {TestCase} from "./TestCase";
 
@@ -238,9 +238,10 @@ export class StopRouteTest extends TestCase {
             ]
         );
         const kmb = new Kmb();
-        const stop_route = new kmb.StopRoute(
-            new kmb.Stop('WE01-N-1250-0', 'Western Harbour Crossing', 'B', 10)
+        const stop_route = new kmb.Stopping(
+            new kmb.Stop('WE01-N-1250-0', 'Western Harbour Crossing')
             , new kmb.Variant(new kmb.Route('960', 2), 1, 'Wan Chai North', 'Tuen Mun (Kin Sang Estate)', '')
+            , 'B'
             , 10
         );
         const results = await stop_route.getEtas(5, 'GET');
@@ -273,9 +274,10 @@ export class StopRouteTest extends TestCase {
             , [null]
         );
         const kmb = new Kmb();
-        const stop_route = new kmb.StopRoute(
-            new kmb.Stop('TR01-W-1012-0', 'Tai Koo Shing Road', '', 6)
+        const stop_route = new kmb.Stopping(
+            new kmb.Stop('TR01-W-1012-0', 'Tai Koo Shing Road')
             , new kmb.Variant(new kmb.Route('TRAM', 1), 2, 'Shau Kei Wan', '(Westbound) from Shau Kei Wan to Happy Valley', 'Tram Route(operated by Hongkong Tramways Limited)')
+            , ''
             , 6
         );
         const results = await stop_route.getEtas(5, 'GET');
@@ -328,9 +330,10 @@ export class StopRouteTest extends TestCase {
             ]
         );
         const kmb = new Kmb(undefined, undefined, undefined, proxy_url);
-        const stop_route = new kmb.StopRoute(
-            new kmb.Stop('WE01-N-1250-0', 'Western Harbour Crossing', 'B', 10)
+        const stop_route = new kmb.Stopping(
+            new kmb.Stop('WE01-N-1250-0', 'Western Harbour Crossing')
             , new kmb.Variant(new kmb.Route('960', 2), 1, 'Wan Chai North', 'Tuen Mun (Kin Sang Estate)', '')
+            , 'B'
             , 10
         );
         await stop_route.getEtas();
@@ -372,9 +375,10 @@ export class StopRouteTest extends TestCase {
                 ]
             );
         const kmb = new Kmb(language, undefined, undefined);
-        const stop_route = new kmb.StopRoute(
-            new kmb.Stop('WE01-N-1250-0', 'Western Harbour Crossing', 'B', 10)
+        const stop_route = new kmb.Stopping(
+            new kmb.Stop('WE01-N-1250-0', 'Western Harbour Crossing')
             , new kmb.Variant(new kmb.Route('960', 2), 1, 'Wan Chai North', 'Tuen Mun (Kin Sang Estate)', '')
+            , 'B'
             , 10
         );
         await stop_route.getEtas();
@@ -422,15 +426,16 @@ export class StopRouteTest extends TestCase {
             ]
         );
         const kmb = new Kmb();
-        const stop_route = new kmb.StopRoute(
-            new kmb.Stop('WE01-N-1250-0', 'Western Harbour Crossing', 'B', 10)
+        const stop_route = new kmb.Stopping(
+            new kmb.Stop('WE01-N-1250-0', 'Western Harbour Crossing')
             , new kmb.Variant(new kmb.Route('960', 2), 1, 'Wan Chai North', 'Tuen Mun (Kin Sang Estate)', '')
+            , 'B'
             , 10
         );
         await stop_route.getEtas(5, 'POST');
     }
 
-    private static setUpFailureCalls() : StopRoute {
+    private static setUpFailureCalls() : Stopping {
         Sinon.stub(Secret, 'getSecret')
             .returns(new Secret('A06F1CC2A3A43BD8B7A80846F7D65501AE1503A9', 1043206738));
         const eta_server = nock('https://etav3.kmb.hk');
@@ -475,9 +480,10 @@ export class StopRouteTest extends TestCase {
             ]
         );
         const kmb = new Kmb();
-        const stop_route = new kmb.StopRoute(
-            new kmb.Stop('WE01-N-1250-0', 'Western Harbour Crossing', 'B', 10)
+        const stop_route = new kmb.Stopping(
+            new kmb.Stop('WE01-N-1250-0', 'Western Harbour Crossing')
             , new kmb.Variant(new kmb.Route('960', 2), 1, 'Wan Chai North', 'Tuen Mun (Kin Sang Estate)', '')
+            , 'B'
             , 10
         );
         return stop_route;
