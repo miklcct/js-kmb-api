@@ -1,7 +1,7 @@
 import https = require('https');
 import path = require('path');
 import StorageShim = require('node-storage-shim');
-import rootCas = require('ssl-root-cas/latest');
+import rootCas = require('ssl-root-cas');
 import Axios from "axios";
 
 import {Language} from "./Language";
