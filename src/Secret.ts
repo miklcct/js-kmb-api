@@ -1,4 +1,4 @@
-import aesjs from "aes-js";
+import aesjs = require("aes-js");
 
 export default class Secret {
     constructor(public readonly apiKey : string, public readonly ctr : number) {

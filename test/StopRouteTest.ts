@@ -1,7 +1,8 @@
 import {params, suite, test} from '@testdeck/mocha';
 import {assert} from 'chai';
-import nock from 'nock';
-import Sinon, {SinonFakeTimers} from 'sinon';
+import {SinonFakeTimers} from 'sinon';
+import nock = require('nock');
+import Sinon = require('sinon');
 import Kmb, {Language, Stopping} from '../src';
 import Secret from '../src/Secret';
 import {TestCase} from "./TestCase";

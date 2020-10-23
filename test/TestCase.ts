@@ -1,4 +1,4 @@
-import Sinon from "sinon";
+import Sinon = require("sinon");
 
 export abstract class TestCase {
     after() : void {

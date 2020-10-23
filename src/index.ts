@@ -2,6 +2,10 @@ import Axios from "axios";
 import {Language} from "./Language";
 import Secret from "./Secret";
 import {StoppingCacheType} from "./StoppingCacheType";
+import https = require('https');
+import StorageShim = require('node-storage-shim');
+import path = require('path');
+import rootCas = require('ssl-root-cas/latest');
 
 type Stop = InstanceType<Kmb['Stop']>;
 type Route = InstanceType<Kmb['Route']>;
@@ -20,13 +24,10 @@ export default class Kmb {
 
     public constructor(
         public readonly language : Language = 'en'
-        , stopStorage? : Storage
+        , stopStorage : Storage = new StorageShim()
         , stopRouteStorage? : Storage
         , public proxyUrl : string | null = null
     ) {
-        if (stopRouteStorage !== undefined && stopStorage === undefined) {
-            throw new Error('Cannot use stopRouteStorage without stopStorage');
-        }
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const kmb = this;
         this.Stop = class {
@@ -345,9 +346,9 @@ export default class Kmb {
                                 d: encrypted_query.apiKey,
                                 ctr: encrypted_query.ctr
                             }
-                            , {responseType : 'json'}
+                            , {responseType : 'json', httpsAgent : Kmb.httpsAgent}
                         )
-                        : Axios.get(`${kmb.proxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`, {params : query, responseType : 'json'})
+                        : Axios.get(`${kmb.proxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`, {params : query, responseType : 'json', httpsAgent : Kmb.httpsAgent})
                 ).then(
                     ({data : json} : {data : [{ eta: {t : string, eot : string, dis? : number}[]}?]}) =>
                         (json[0]?.eta ?? [])
@@ -439,6 +440,15 @@ export default class Kmb {
             , (match, p1 : string, p2 : string, p3 : string) => p1 + p3.toUpperCase()
         );
     }
+
+    private static readonly httpsAgent = (() => {
+        // rootCas has a caveat that it will automatically add certs into the global agent, labelled "backwards compat"
+        // in the source code. I don't want this behaviour happening here
+        const original = https.globalAgent.options.ca;
+        const result = new https.Agent({ca : rootCas.create().addFile(path.resolve(__dirname, '../cert.pem'))});
+        https.globalAgent.options.ca = original;
+        return result;
+    })();
 }
 
 export {Language, Stop, Route, Variant, Stopping, Eta};

@@ -1,6 +1,7 @@
 import {params, suite, test} from '@testdeck/mocha';
 import {assert} from 'chai';
-import Sinon from 'sinon';
+import Sinon = require('sinon');
+import Storage = require('node-storage-shim');
 import Kmb from "../src";
 import {TestCase} from "./TestCase";
 
@@ -503,7 +504,7 @@ export class StopTest extends TestCase {
                 )
             );
         }
-        api_stub.calledWithExactly(({action: 'getRoutesInStop', 'bsiCode': input.id}));
+        api_stub.calledWithExactly({action: 'getRoutesInStop', 'bsiCode': input.id});
         const real_input = input.name === undefined ? new kmb.Stop(input.id) : new kmb.Stop(input.id, input.name);
         assert.deepStrictEqual(await real_input.getStoppings(all_variants), expected);
         assert.deepStrictEqual(

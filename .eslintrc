@@ -5,7 +5,10 @@
         "@typescript-eslint"
     ],
     "parserOptions" : {
-        "project" : ["./tsconfig.json"]
+        "project" : ["./tsconfig.eslint.json"]
+    },
+    "env" : {
+        "node" : true
     },
     "extends" : [
         "eslint:recommended",
@@ -14,12 +17,6 @@
         "plugin:@typescript-eslint/recommended-requiring-type-checking"
     ],
     "overrides" : [
-        {
-            "rules" : {
-                "no-debugger" : "off"
-            },
-            "files" : "**"
-        },
         {
             "files" : "*.js",
             "rules": {

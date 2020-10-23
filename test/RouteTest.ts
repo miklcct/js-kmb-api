@@ -2,7 +2,7 @@ import {params, suite, test} from '@testdeck/mocha';
 import {assert} from 'chai';
 import {TestCase} from "./TestCase";
 import Kmb, {Language} from "../src";
-import Sinon from "sinon";
+import Sinon = require("sinon");
 
 @suite
 export class RouteTest extends TestCase {

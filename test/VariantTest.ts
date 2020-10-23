@@ -1,7 +1,7 @@
 import {TestCase} from "./TestCase";
 import {params, suite, test} from '@testdeck/mocha';
 import {assert} from 'chai';
-import Sinon from "sinon";
+import Sinon = require("sinon");
 import Kmb, {Language} from "../src";
 
 @suite

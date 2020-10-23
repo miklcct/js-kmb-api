@@ -1,8 +1,8 @@
-import nock from 'nock';
+import nock = require('nock');
 import {TestCase} from "./TestCase";
 import {suite, test, params} from "@testdeck/mocha";
 import Kmb from "../src";
-import Sinon from "sinon";
+import Sinon = require("sinon");
 import {assert} from "chai";
 
 @suite
