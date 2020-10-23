@@ -1,5 +1,5 @@
-# Javascript module for getting KMB data
-This is a library for getting KMB data. It can get routes, stops, variants, and ETAs.
+# Node.js module for getting bus information of KMB
+This is a node.js module for getting bus service information of KMB routes. It can get routes, stops, variants, and ETAs.  
 
 ## Example Usage
 ### Loading the library
@@ -54,33 +54,3 @@ To run the example, use
 node example-javascript.js # Javascript example
 ts-node example-typescript.ts # Typescript example
 ```
-
-## Classes
-All the classes below are inside the kmb object tying them to the API instance
-
-### `Route`
-Represents a route with number and bound.
-### `Stop`
-Represents a stop with ID, name, direction in route and sequence in route.
-The name is stored in localStorage automatically.
-
-Calling `Stop.get` with a variant will return the stop list of that variant.
-
-### `Stop`
-Represents a stop with ID only. The name property is retrieved from localStorage by `Stop`
-
-
-### `StopRoute`
-Represents a stop in a variant.
-
-Calling `StopRoute.get` with a stop will return all `StopRoute`s containing with all routes serving that stop.
-
-### `Variant`
-Represents a variant in a route.
-
-Calling `Variant.get` with a route will return all variants of that route.
-
-### `Eta`
-Represents an ETA entry.
-
-Calling `Eta.get` with a StopRoute will return the ETA for that stop for that route.
