@@ -18,12 +18,13 @@ export default class Kmb {
     public readonly StopRoute;
     public readonly Eta;
 
+    private readonly apiEndpoint = 'https://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx';
+
     public constructor(
         public readonly language : Language = 'en'
         , stopStorage? : Storage
         , stopRouteStorage? : Storage
         , public proxyUrl : string | null = null
-        , public apiEndpoint = 'https://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx'
     ) {
         if (stopRouteStorage !== undefined && stopStorage === undefined) {
             throw new Error('Cannot use stopRouteStorage without stopStorage');
