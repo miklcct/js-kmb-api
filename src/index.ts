@@ -54,6 +54,7 @@ export default class Kmb {
              * @param update_count Specify this to update the progress of how many routes are remaining
              */
             public async getStoppings(all_variants = false, update_count?: (remaining: number) => void): Promise<Stopping[]> {
+                const initial_name = this.name;
                 const cached = stopRouteStorage?.getItem(`${this.id}_${kmb.language}`) ?? null;
                 const get_main_service_type = (variants: Variant[], route: Route): number =>
                     Math.min(
@@ -81,7 +82,7 @@ export default class Kmb {
                                     , item.variant.destination
                                     , item.variant.description
                                 )
-                                , item.routeDirection
+                                , item.direction
                                 , item.sequence
                             );
                         }
@@ -112,9 +113,9 @@ export default class Kmb {
                                                         (await variant.getStoppings()).filter(
                                                             ({stop : inner_stop}) =>
                                                                 inner_stop.id === this.id
-                                                                || this.name !== undefined
+                                                                || initial_name !== undefined
                                                                     // some poles in the same bus terminus are missing words "Bus Terminus"
-                                                                    && (inner_stop.streetDirection === 'T' || inner_stop.name === this.name)
+                                                                    && (inner_stop.streetDirection === 'T' || inner_stop.name === initial_name)
                                                                     && inner_stop.streetId === this.streetId
                                                                     && inner_stop.streetDirection === this.streetDirection
                                                         )
@@ -130,8 +131,8 @@ export default class Kmb {
                             }
                         )
                     )).flat();
-                    if (this.name === undefined) {
-                        // when name is undefined the result may be incomplete
+                    if (initial_name === undefined) {
+                        // when initial name is undefined the result may be incomplete
                         return results[0].stop.getStoppings(all_variants, update_count);
                     } else {
                         stopRouteStorage?.setItem(`${this.id}_${kmb.language}`, JSON.stringify(results));

@@ -7,6 +7,6 @@ export type StoppingCacheType = {
         destination: string,
         description: string,
     },
-    routeDirection : string,
+    direction : string,
     sequence: number
 }[];
