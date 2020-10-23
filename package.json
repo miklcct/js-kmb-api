@@ -1,7 +1,7 @@
 {
     "name": "js-kmb-api",
     "description": "Library for querying KMB data",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "main": "dist/src/index.js",
     "types": "dist/src/index.d.ts",
     "author": "Michael Tsang",
