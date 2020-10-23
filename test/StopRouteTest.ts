@@ -1,7 +1,6 @@
 import {params, suite, test} from '@testdeck/mocha';
-import Axios from 'axios';
 import {assert} from 'chai';
-import nock, {Scope} from 'nock';
+import nock from 'nock';
 import Sinon, {SinonFakeTimers} from 'sinon';
 import Kmb, {Language, StopRoute} from '../src';
 import Secret from '../src/Secret';
@@ -255,15 +254,15 @@ export class StopRouteTest extends TestCase {
 
     @test
     async getEtasWithFailures() : Promise<void> {
-        const {stop_route} = StopRouteTest.setUpFailureCalls();
+        const stop_route = StopRouteTest.setUpFailureCalls();
         const results = await stop_route.getEtas(3, 'GET');
         assert.deepStrictEqual(results, []);
     }
 
     @test
     async getEtasWithTooManyFailures() : Promise<void> {
-        const {error, stop_route} = StopRouteTest.setUpFailureCalls();
-        await assert.isRejected(stop_route.getEtas(2, 'GET'), error);
+        const stop_route = StopRouteTest.setUpFailureCalls();
+        await assert.isRejected(stop_route.getEtas(2, 'GET'));
     }
 
     @test
@@ -314,54 +313,41 @@ export class StopRouteTest extends TestCase {
     async getEtasInDifferentLanguages([language, api_language] : [Language, string]) : Promise<void> {
         Sinon.stub(Secret, 'getSecret')
             .returns(new Secret('A06F1CC2A3A43BD8B7A80846F7D65501AE1503A9', 1043206738));
-        const http_stub = Sinon.stub(Axios, 'get');
-        http_stub.returns(
-            Promise.resolve(
-                {
-                    data : [
-                        {
-                            routeNo : '960',
-                            bound : 2,
-                            service_type : 1,
-                            seq : 10,
-                            responsecode : 0,
-                            updated : 1603346890000,
-                            generated : 1603346896767,
-                            eta : []
-                        }
-                    ],
-                    status : 200,
-                    statusText : 'OK',
-                    headers : {},
-                    config : {}
-                }
-            )
-        );
-        const kmb = new Kmb(language, undefined, undefined, 'https://example.com/');
+        nock('https://etav3.kmb.hk').get('/').query(
+            {
+                action : 'geteta',
+                lang : api_language,
+                route : '960',
+                bound : '2',
+                stop_seq : '10',
+                service_type : '1',
+                vendor_id : Secret.VENDOR_ID,
+                apiKey : 'A06F1CC2A3A43BD8B7A80846F7D65501AE1503A9',
+                ctr : '1043206738',
+            }
+        )
+            .reply(
+                200
+                , [
+                    {
+                        routeNo : '960',
+                        bound : 2,
+                        service_type : 1,
+                        seq : 10,
+                        responsecode : 0,
+                        updated : 1603346890000,
+                        generated : 1603346896767,
+                        eta : []
+                    }
+                ]
+            );
+        const kmb = new Kmb(language, undefined, undefined);
         const stop_route = new kmb.StopRoute(
             new kmb.Stop('WE01-N-1250-0', 'Western Harbour Crossing', 'B', 10)
             , new kmb.Variant(new kmb.Route('960', 2), 1, 'Wan Chai North', 'Tuen Mun (Kin Sang Estate)', '')
             , 10
         );
         await stop_route.getEtas();
-        assert(
-            http_stub.calledWith(
-                'https://example.com/https://etav3.kmb.hk/?action=geteta'
-                , {
-                    params : {
-                        lang : api_language,
-                        route : '960',
-                        bound : '2',
-                        stop_seq : '10',
-                        service_type : '1',
-                        vendor_id : Secret.VENDOR_ID,
-                        apiKey : 'A06F1CC2A3A43BD8B7A80846F7D65501AE1503A9',
-                        ctr : '1043206738',
-                    },
-                    responseType : 'json'
-                }
-            )
-        );
     }
 
     @test
@@ -388,27 +374,22 @@ export class StopRouteTest extends TestCase {
             }`
         )
             .returns(data);
-        const http_stub = Sinon.stub(Axios, 'post').returns(
-            Promise.resolve(
+        const eta_server = nock('https://etav3.kmb.hk/');
+        eta_server.post('/?action=geteta', {d : data.apiKey, ctr : data.ctr}).reply(500, {});
+        eta_server.post('/?action=geteta', {d : data.apiKey, ctr : data.ctr}).reply(
+            200
+            , [
                 {
-                    data : [
-                        {
-                            routeNo : '960',
-                            bound : 2,
-                            service_type : 1,
-                            seq : 10,
-                            responsecode : 0,
-                            updated : 1603346890000,
-                            generated : 1603346896767,
-                            eta : []
-                        }
-                    ],
-                    status : 200,
-                    statusText : 'OK',
-                    headers : {},
-                    config : {}
+                    routeNo : '960',
+                    bound : 2,
+                    service_type : 1,
+                    seq : 10,
+                    responsecode : 0,
+                    updated : 1603346890000,
+                    generated : 1603346896767,
+                    eta : []
                 }
-            )
+            ]
         );
         const kmb = new Kmb();
         const stop_route = new kmb.StopRoute(
@@ -417,29 +398,12 @@ export class StopRouteTest extends TestCase {
             , 10
         );
         await stop_route.getEtas(5, 'POST');
-        assert(
-            http_stub.calledWith(
-                'https://etav3.kmb.hk/?action=geteta'
-                , {d : data.apiKey, ctr : data.ctr}
-                , {responseType : 'json'}
-            )
-        );
     }
 
-    private static setUpFailureCalls() : {eta_server : Scope, error : Error, stop_route : StopRoute} {
+    private static setUpFailureCalls() : StopRoute {
         Sinon.stub(Secret, 'getSecret')
-            .returns(new Secret('A06F1CC2A3A43BD8B7A80846F7D65501AE1503A9&ctr=1043206738', 1043206738));
+            .returns(new Secret('A06F1CC2A3A43BD8B7A80846F7D65501AE1503A9', 1043206738));
         const eta_server = nock('https://etav3.kmb.hk');
-        const error = Object.assign(
-            new Error()
-            , {
-                config : {},
-                isAxiosError : true,
-                toJSON : () => (
-                    {}
-                )
-            }
-        );
         eta_server.get('/').query(
             {
                 action : 'geteta',
@@ -479,13 +443,13 @@ export class StopRouteTest extends TestCase {
                     eta : []
                 }
             ]
-        ).persist();
+        );
         const kmb = new Kmb();
         const stop_route = new kmb.StopRoute(
             new kmb.Stop('WE01-N-1250-0', 'Western Harbour Crossing', 'B', 10)
             , new kmb.Variant(new kmb.Route('960', 2), 1, 'Wan Chai North', 'Tuen Mun (Kin Sang Estate)', '')
             , 10
         );
-        return {eta_server, error, stop_route};
+        return stop_route;
     }
 }

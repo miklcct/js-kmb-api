@@ -243,7 +243,7 @@ export default class Kmb {
                                     'zh-hans': 'Origin_CHI',
                                     'zh-hant': 'Origin_CHI'
                                 }[kmb.language] as keyof typeof json.data.routes[0]
-                                ]
+                            ]
                         )
                         , Kmb.toTitleCase(
                             item[
@@ -252,7 +252,7 @@ export default class Kmb {
                                     'zh-hans': 'Destination_CHI',
                                     'zh-hant': 'Destination_CHI'
                                 }[kmb.language] as keyof typeof json.data.routes[0]
-                                ]
+                            ]
                         )
                         , item[
                             {
@@ -260,7 +260,7 @@ export default class Kmb {
                                 'zh-hans': 'Desc_CHI',
                                 'zh-hant': 'Desc_CHI'
                             }[kmb.language] as keyof typeof json.data.routes[0]
-                            ]
+                        ]
                     )
                 );
             }
@@ -385,7 +385,7 @@ export default class Kmb {
                             )
                     , reason => {
                         if (retry_count > 0) {
-                            return this.getEtas(retry_count - 1);
+                            return this.getEtas(retry_count - 1, method);
                         } else {
                             throw reason;
                         }
