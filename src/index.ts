@@ -3,6 +3,7 @@ import path = require('path');
 import StorageShim = require('node-storage-shim');
 import rootCas = require('ssl-root-cas');
 import Axios from "axios";
+import 'array-flat-polyfill';
 
 import {Language} from "./Language";
 import Secret from "./Secret";
@@ -116,8 +117,8 @@ export default class Kmb {
                     ? () => true
                     : (value, index, array) =>
                         value.variant.serviceType === get_main_service_type(
-                        array.map(a => a.variant),
-                        value.variant.route
+                            array.map(a => a.variant),
+                            value.variant.route
                         );
                 if (cached !== null) {
                     const result = JSON.parse(cached) as StoppingCacheType;
@@ -162,39 +163,22 @@ export default class Kmb {
                                     // let remaining_bounds = data.length;
                                     const results = (
                                         await Promise.all(
-                                            (
-                                                await kmb.getRoutes(route_number)
-                                            ).map(
-                                                async route =>
-                                                    (
-                                                        await Promise.all(
-                                                            (
-                                                                await route.getVariants()
-                                                            ).map(
-                                                                async variant =>
-                                                                    (
-                                                                        await variant.getStoppings()
-                                                                    ).filter(
-                                                                        ({stop : inner_stop}) =>
-                                                                            inner_stop.id
-                                                                            === this.id
-                                                                            || initial_name
-                                                                            !== undefined
-                                                                            // some poles in the same bus terminus are missing words "Bus Terminus"
-                                                                            && (
-                                                                                inner_stop.streetDirection
-                                                                                === 'T'
-                                                                                || inner_stop.name
-                                                                                === initial_name
-                                                                            )
-                                                                            && inner_stop.streetId
-                                                                            === this.streetId
-                                                                            && inner_stop.streetDirection
-                                                                            === this.streetDirection
-                                                                    )
+                                            (await kmb.getRoutes(route_number)).map(
+                                                async route => (
+                                                    await Promise.all(
+                                                        (await route.getVariants()).map(
+                                                            async variant => (await variant.getStoppings()).filter(
+                                                                ({stop : inner_stop}) =>
+                                                                    inner_stop.id === this.id
+                                                                    || initial_name !== undefined
+                                                                    // some poles in the same bus terminus are missing words "Bus Terminus"
+                                                                        && (inner_stop.streetDirection === 'T' || inner_stop.name === initial_name)
+                                                                        && inner_stop.streetId === this.streetId
+                                                                        && inner_stop.streetDirection === this.streetDirection
                                                             )
                                                         )
-                                                    ).flat()
+                                                    )
+                                                ).flat()
                                             )
                                         )
                                     ).flat();
@@ -325,7 +309,7 @@ export default class Kmb {
                                     'zh-hans' : 'Origin_CHI',
                                     'zh-hant' : 'Origin_CHI'
                                 }[kmb.language] as keyof typeof json.data.routes[0]
-                                ]
+                            ]
                         )
                         , Kmb.toTitleCase(
                             item[
@@ -334,7 +318,7 @@ export default class Kmb {
                                     'zh-hans' : 'Destination_CHI',
                                     'zh-hant' : 'Destination_CHI'
                                 }[kmb.language] as keyof typeof json.data.routes[0]
-                                ]
+                            ]
                         )
                         , item[
                             {
@@ -342,7 +326,7 @@ export default class Kmb {
                                 'zh-hans' : 'Desc_CHI',
                                 'zh-hant' : 'Desc_CHI'
                             }[kmb.language] as keyof typeof json.data.routes[0]
-                            ]
+                        ]
                     )
                 );
             }
@@ -409,7 +393,7 @@ export default class Kmb {
                                         'zh-hans' : 'SCName',
                                         'zh-hant' : 'CName'
                                     }[kmb.language] as keyof typeof item
-                                    ]
+                                ]
                             )
                         )
                         , this
@@ -455,22 +439,20 @@ export default class Kmb {
                 return (
                     method === 'POST'
                         ? Axios.post(
-                        `${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`
-                        , {
-                            d : encrypted_query.apiKey,
-                            ctr : encrypted_query.ctr
-                        }
-                        , {responseType : 'json', httpsAgent : Kmb.httpsAgent}
+                            `${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`
+                            , {
+                                d : encrypted_query.apiKey,
+                                ctr : encrypted_query.ctr
+                            }
+                            , {responseType : 'json', httpsAgent : Kmb.httpsAgent}
                         )
                         : Axios.get(
-                        `${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`,
-                        {params : query, responseType : 'json', httpsAgent : Kmb.httpsAgent}
+                            `${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`,
+                            {params : query, responseType : 'json', httpsAgent : Kmb.httpsAgent}
                         )
                 ).then(
                     ({data : json} : {data : [{eta : {t : string, eot : string, dis? : number}[]}?]}) =>
-                        (
-                            json[0]?.eta ?? []
-                        )
+                        (json[0]?.eta ?? [])
                             .map(
                                 obj => (
                                     {
@@ -485,9 +467,10 @@ export default class Kmb {
                             .map(
                                 obj => {
                                     const time = new Date();
-                                    time.setUTCHours((
-                                        Number(obj.time.split(':')[0]) + 24 - 8
-                                    ) % 24, Number(obj.time.split(':')[1]), 0);
+                                    time.setUTCHours(
+                                        (Number(obj.time.split(':')[0]) + 24 - 8) % 24
+                                        , Number(obj.time.split(':')[1]), 0
+                                    );
                                     if (time.getTime() - Date.now() < -60 * 60 * 1000 * 2) {
                                         // the time is less than 2 hours past - assume midnight rollover
                                         time.setDate(time.getDate() + 1);
