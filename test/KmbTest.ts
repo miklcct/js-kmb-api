@@ -4,9 +4,37 @@ import {suite, test, params} from "@testdeck/mocha";
 import Kmb from "../src";
 import Sinon = require("sinon");
 import {assert} from "chai";
+import Storage = require('node-storage-shim');
 
 @suite
 export class KmbTest extends TestCase {
+    @test
+    storageIsClearedWhenConstructing() : void {
+        const storage = new Storage();
+        storage.setItem('foo', 'bar');
+        void new Kmb('en', storage);
+        assert.isNull(storage.getItem('foo'));
+    }
+
+    @test
+    storageIsClearedWhenReusingStorageAtPreviousVersion() : void {
+        const storage = new Storage();
+        void new Kmb('en', storage);
+        storage.setItem('foo', 'bar');
+        storage.setItem(Kmb.STORAGE_VERSION_KEY, String(Number(storage.getItem(Kmb.STORAGE_VERSION_KEY)) - 1));
+        void new Kmb('en', storage);
+        assert.isNull(storage.getItem('foo'));
+    }
+
+    @test
+    storageIsNotClearedWhenReusingStorageAtTheSameVersion() : void {
+        const storage = new Storage();
+        void new Kmb('en', storage);
+        storage.setItem('foo', 'bar');
+        void new Kmb('en', storage);
+        assert.strictEqual(storage.getItem('foo'), 'bar');
+    }
+
     @test
     async getRoutes(): Promise<void> {
         const json = {

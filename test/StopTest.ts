@@ -46,6 +46,8 @@ export class StopTest extends TestCase {
     @test
     getNameFromStorage(): void {
         const storage = new Storage;
+        // initialise the storage to the appropriate version
+        void new Kmb(undefined, storage);
         storage.setItem('TS06-S-1000-0_zh-hans', '青雲站');
         assert.strictEqual(new new Kmb('zh-hans', storage).Stop('TS06-S-1000-0').name, '青雲站');
     }

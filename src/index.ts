@@ -42,6 +42,11 @@ export default class Kmb {
 
     private readonly apiEndpoint = 'https://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx';
 
+    // change the below when the storage used is no longer compatible with the old version
+    public static readonly STORAGE_VERSION_KEY = '$version';
+    private static readonly stopStorageVersion = 2;
+    private static readonly stoppingStorageVersion = 2;
+
     /**
      * Construct an API instance
      * @param language
@@ -62,6 +67,19 @@ export default class Kmb {
         , stoppingStorage? : Storage
         , public corsProxyUrl : string | null = null
     ) {
+        for (
+            const {storage, version} of
+            [
+                {storage : stopStorage, version : Kmb.stopStorageVersion},
+                {storage : stoppingStorage, version : Kmb.stoppingStorageVersion},
+            ]
+        ) {
+            if (storage !== undefined && Number(storage[Kmb.STORAGE_VERSION_KEY]) !== version) {
+                storage.clear();
+                storage[Kmb.STORAGE_VERSION_KEY] = version;
+            }
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const kmb = this;
         this.Stop = class {
