@@ -1,5 +1,21 @@
 ## [3.0.0] (2020-10-30)
-* Allow choosing different API for ETA
+* **Breaking**: Allow choosing different API for ETA
+  
+  The second parameter on `Stopping.getEtas` has changed to use a fetcher rather than `GET` or `POST`.
+  You can choose between `Stopping.callWebEtaApi` (default) or `Stopping.callMobileEtaApi` as the fetcher,
+  or any custom fetcher.
+  
+  If you relied on using the mobile API with the second parameter, you need to change
+  
+  ```javascript
+  stopping.get(retry_count, 'POST')
+  ```
+  
+  to
+  
+  ```javascript
+  stopping.get(retry_count, stopping.callMobileEtaApi.bind(stopping, 'POST'))
+  ```
 
 ## [2.1.0] (2020-10-24)
 * introduce storage versioning - it is now safe to reuse the same storage even the library version is changed
