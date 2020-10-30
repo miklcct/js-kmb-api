@@ -8,13 +8,13 @@
   If you relied on using the mobile API with the second parameter, you need to change
   
   ```javascript
-  stopping.get(retry_count, 'POST')
+  stopping.getEtas(retry_count, 'POST')
   ```
   
   to
   
   ```javascript
-  stopping.get(retry_count, stopping.callMobileEtaApi.bind(stopping, 'POST'))
+  stopping.getEtas(retry_count, stopping.callMobileEtaApi.bind(stopping, 'POST'))
   ```
 
 ## [2.1.0] (2020-10-24)
