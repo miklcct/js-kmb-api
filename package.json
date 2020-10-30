@@ -42,6 +42,6 @@
         "lint": "eslint .",
         "test": "mocha",
         "clean": "rm -fr dist",
-        "prepack": "npm run clean && npm run build && npm run lint && TZ=UTC npm run test"
+        "prepack": "yarn clean && yarn run build && yarn run lint && TZ=UTC yarn test"
     }
 }

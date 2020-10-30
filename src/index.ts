@@ -1,12 +1,12 @@
 import https = require('https');
-import path = require('path');
 import StorageShim = require('node-storage-shim');
+import path = require('path');
 import rootCas = require('ssl-root-cas');
-import Axios from "axios";
 import 'array-flat-polyfill';
+import Axios from "axios";
 
 import {Language} from "./Language";
-import Secret from "./Secret";
+import Secret from './Secret';
 import {StoppingCacheType} from "./StoppingCacheType";
 
 /**
@@ -423,6 +423,8 @@ export default class Kmb {
             }
         };
 
+        type EtaData = {t : string, eot : string, dis? : number};
+
         this.Stopping = class {
             /**
              * @param stop
@@ -440,7 +442,7 @@ export default class Kmb {
             ) {
             }
 
-            async getEtas(retry_count = 5, method : 'GET' | 'POST' = 'GET') : Promise<Eta[]> {
+            public callMobileEtaApi(method : 'GET' | 'POST' = 'GET') : Promise<EtaData[]> {
                 const secret = Secret.getSecret(`${new Date().toISOString().split('.')[0]}Z`);
                 const languages = {'en' : 'en', 'zh-hans' : 'sc', 'zh-hant' : 'tc'};
                 const query = {
@@ -454,23 +456,68 @@ export default class Kmb {
                     ctr : String(secret.ctr)
                 };
                 const encrypted_query = Secret.getSecret(`?${new URLSearchParams(query).toString()}`, secret.ctr);
-                return (
-                    method === 'POST'
-                        ? Axios.post(
-                            `${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`
-                            , {
-                                d : encrypted_query.apiKey,
-                                ctr : encrypted_query.ctr
-                            }
-                            , {responseType : 'json', httpsAgent : Kmb.httpsAgent}
-                        )
-                        : Axios.get(
-                            `${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`,
-                            {params : query, responseType : 'json', httpsAgent : Kmb.httpsAgent}
-                        )
-                ).then(
-                    ({data : json} : {data : [{eta : {t : string, eot : string, dis? : number}[]}?]}) =>
+                const promise = method === 'POST'
+                    ? Axios.post(
+                        `${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`
+                        , {
+                            d : encrypted_query.apiKey,
+                            ctr : encrypted_query.ctr
+                        }
+                        , {responseType : 'json', httpsAgent : Kmb.httpsAgent}
+                    )
+                    : Axios.get(
+                        `${kmb.corsProxyUrl ?? ''}https://etav3.kmb.hk/?action=geteta`,
+                        {params : query, responseType : 'json', httpsAgent : Kmb.httpsAgent}
+                    );
+                return promise.then(
+                    ({data : json} : {data : [{eta : EtaData[]}?]}) =>
                         (json[0]?.eta ?? [])
+                );
+            }
+
+            public callWebEtaApi() : Promise<EtaData[]> {
+                const current_date = new Date;
+                const date_string = `${current_date.getUTCFullYear()}-${(`00${current_date.getUTCMonth() + 1}`).slice(-2)}-${(`00${current_date.getUTCDate()}`).slice(-2)} ${(`00${current_date.getUTCHours()}`).slice(-2)}:${(`00${current_date.getUTCMinutes()}`).slice(-2)}:${(`00${current_date.getUTCSeconds()}`).slice(-2)}.${(`00${current_date.getUTCMilliseconds()}`).slice(-2)}.`;
+                const sep = `--31${date_string}13--`;
+                const token = `E${
+                    (
+                        typeof btoa !== 'undefined' ? btoa : (
+                            (b : string) => Buffer.from(b).toString('base64')
+                        )
+                    )(
+                        this.variant.route.number
+                        + sep
+                        + String(this.variant.route.bound)
+                        + sep
+                        + String(this.variant.serviceType)
+                        + sep
+                        + this.stop.id.trim().replace(/-/gi, '')
+                        + sep
+                        + String(this.sequence)
+                        + sep
+                        + String((
+                            new Date
+                        ).getTime())
+                    )
+                }`;
+                return Axios.post(
+                    `${(corsProxyUrl ?? '') + kmb.apiEndpoint}?action=get_ETA&lang=${{'en' : 0, 'zh-hant' : 1, 'zh-hans' : 2}[language]}`
+                    , new URLSearchParams({
+                        token,
+                        t : date_string,
+                    }).toString()
+                    , {responseType : 'json', httpsAgent : Kmb.httpsAgent, headers : {Origin : 'https://search.kmb.hk'}}
+                ).then(
+                    ({data : json} : {data : {data : {response : EtaData[]}}}) => json.data.response ?? []
+                );
+            }
+
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            async getEtas(retry_count = 5, fetcher : (this : Stopping) => Promise<EtaData[]> = this.callWebEtaApi) : Promise<Eta[]> {
+                const promise = fetcher.call(this);
+                return promise.then(
+                    (response : EtaData[]) =>
+                        response
                             .map(
                                 obj => (
                                     {
@@ -502,7 +549,7 @@ export default class Kmb {
                             )
                     , reason => {
                         if (retry_count > 0) {
-                            return this.getEtas(retry_count - 1, method);
+                            return this.getEtas(retry_count - 1, fetcher);
                         } else {
                             throw reason;
                         }

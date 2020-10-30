@@ -1,3 +1,6 @@
+## [3.0.0] (2020-10-30)
+* Allow choosing different API for ETA
+
 ## [2.1.0] (2020-10-24)
 * introduce storage versioning - it is now safe to reuse the same storage even the library version is changed
 
