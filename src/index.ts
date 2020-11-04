@@ -4,7 +4,7 @@ import path = require('path');
 import rootCas = require('ssl-root-cas');
 import 'array-flat-polyfill';
 import Axios from "axios";
-import hkscsConverter = require('hkscs_unicode_converter');
+import hkscsConverter = require('hkscs_converter');
 
 import {Language} from "./Language";
 import Secret from './Secret';
@@ -630,13 +630,7 @@ export default class Kmb {
         );
     }
 
-    public static convertHkscs(string : string) : string {
-        try {
-            return hkscsConverter.convertString(string);
-        } catch (e) {
-            return string;
-        }
-    }
+    public static convertHkscs = hkscsConverter.convertString;
 
     private static readonly httpsAgent = (
         () => {

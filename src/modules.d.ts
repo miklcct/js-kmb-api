@@ -25,7 +25,7 @@ module "ssl-root-cas/latest" {
     export = rootCas;
 }
 
-module "hkscs_unicode_converter" {
+module "hkscs_converter" {
     declare const hkscsConverter : {convertCharacter : (char : string) => string, convertString : (str : string) => string};
     export = hkscsConverter;
 }
