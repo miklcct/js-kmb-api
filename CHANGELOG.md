@@ -1,3 +1,6 @@
+## [3.1.0] (2020-11-04)
+* Handle HKSCS characters
+
 ## [3.0.0] (2020-10-30)
 * **Breaking**: Allow choosing different API for ETA
   

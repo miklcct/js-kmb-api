@@ -4,6 +4,7 @@ import path = require('path');
 import rootCas = require('ssl-root-cas');
 import 'array-flat-polyfill';
 import Axios from "axios";
+import hkscsConverter = require('hkscs_unicode_converter');
 
 import {Language} from "./Language";
 import Secret from './Secret';
@@ -44,8 +45,8 @@ export default class Kmb {
 
     // change the below when the storage used is no longer compatible with the old version
     public static readonly STORAGE_VERSION_KEY = '$version';
-    private static readonly stopStorageVersion = 2;
-    private static readonly stoppingStorageVersion = 2;
+    private static readonly stopStorageVersion = 3;
+    private static readonly stoppingStorageVersion = 3;
 
     /**
      * Construct an API instance
@@ -321,30 +322,36 @@ export default class Kmb {
                         this
                         , Number(item.ServiceType)
                         , Kmb.toTitleCase(
-                            item[
-                                {
-                                    'en' : 'Origin_ENG',
-                                    'zh-hans' : 'Origin_CHI',
-                                    'zh-hant' : 'Origin_CHI'
-                                }[kmb.language] as keyof typeof json.data.routes[0]
-                            ]
+                            hkscsConverter.convertString(
+                                item[
+                                    {
+                                        'en' : 'Origin_ENG',
+                                        'zh-hans' : 'Origin_CHI',
+                                        'zh-hant' : 'Origin_CHI'
+                                    }[kmb.language] as keyof typeof json.data.routes[0]
+                                ]
+                            )
                         )
                         , Kmb.toTitleCase(
+                            hkscsConverter.convertString(
+                                item[
+                                    {
+                                        'en' : 'Destination_ENG',
+                                        'zh-hans' : 'Destination_CHI',
+                                        'zh-hant' : 'Destination_CHI'
+                                    }[kmb.language] as keyof typeof json.data.routes[0]
+                                ]
+                            )
+                        )
+                        , hkscsConverter.convertString(
                             item[
                                 {
-                                    'en' : 'Destination_ENG',
-                                    'zh-hans' : 'Destination_CHI',
-                                    'zh-hant' : 'Destination_CHI'
+                                    'en' : 'Desc_ENG',
+                                    'zh-hans' : 'Desc_CHI',
+                                    'zh-hant' : 'Desc_CHI'
                                 }[kmb.language] as keyof typeof json.data.routes[0]
                             ]
                         )
-                        , item[
-                            {
-                                'en' : 'Desc_ENG',
-                                'zh-hans' : 'Desc_CHI',
-                                'zh-hant' : 'Desc_CHI'
-                            }[kmb.language] as keyof typeof json.data.routes[0]
-                        ]
                     )
                 );
             }
@@ -405,13 +412,15 @@ export default class Kmb {
                         new kmb.Stop(
                             item.BSICode
                             , Kmb.toTitleCase(
-                                item[
-                                    {
-                                        'en' : 'EName',
-                                        'zh-hans' : 'SCName',
-                                        'zh-hant' : 'CName'
-                                    }[kmb.language] as keyof typeof item
-                                ]
+                                hkscsConverter.convertString(
+                                    item[
+                                        {
+                                            'en' : 'EName',
+                                            'zh-hans' : 'SCName',
+                                            'zh-hant' : 'CName'
+                                        }[kmb.language] as keyof typeof item
+                                    ]
+                                )
                             )
                         )
                         , this
@@ -544,7 +553,7 @@ export default class Kmb {
                                         // the time is more than 6 hours in the future - assume midnight rollover
                                         time.setDate(time.getDate() - 1);
                                     }
-                                    return new kmb.Eta(this, time, obj.distance, obj.remark, obj.real_time);
+                                    return new kmb.Eta(this, time, obj.distance, hkscsConverter.convertString(obj.remark), obj.real_time);
                                 }
                             )
                     , reason => {

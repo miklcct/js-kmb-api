@@ -3,6 +3,7 @@ import {params, suite, test} from '@testdeck/mocha';
 import {assert} from 'chai';
 import Sinon = require("sinon");
 import Kmb, {Language} from "../src";
+import hkscsConverter = require('hkscs_unicode_converter');
 
 @suite
 export class VariantTest extends TestCase {
@@ -132,7 +133,7 @@ export class VariantTest extends TestCase {
         assert.deepStrictEqual(
             json.data.routeStops.map(
                 item => new kmb.Stopping(
-                    new kmb.Stop(item.BSICode, item[column as keyof typeof item])
+                    new kmb.Stop(item.BSICode, hkscsConverter.convertString(item[column as keyof typeof item]))
                     , variant
                     , item.Direction.trim()
                     , Number(item.Seq)
