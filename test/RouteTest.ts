@@ -1,9 +1,8 @@
 import {params, suite, test} from '@testdeck/mocha';
 import {assert} from 'chai';
-import {TestCase} from "./TestCase";
 import Kmb, {Language} from "../src";
+import {TestCase} from "./TestCase";
 import Sinon = require("sinon");
-import hkscsConverter = require('hkscs_unicode_converter');
 
 @suite
 export class RouteTest extends TestCase {
@@ -154,9 +153,9 @@ export class RouteTest extends TestCase {
                 item => new kmb.Variant(
                     route
                     , Number(item.ServiceType)
-                    , Kmb.toTitleCase(hkscsConverter.convertString(item[`Origin_${column_suffix}` as keyof typeof item]))
-                    , Kmb.toTitleCase(hkscsConverter.convertString(item[`Destination_${column_suffix}` as keyof typeof item]))
-                    , hkscsConverter.convertString(item[`Desc_${column_suffix}` as keyof typeof item])
+                    , Kmb.toTitleCase(Kmb.convertHkscs(item[`Origin_${column_suffix}` as keyof typeof item]))
+                    , Kmb.toTitleCase(Kmb.convertHkscs(item[`Destination_${column_suffix}` as keyof typeof item]))
+                    , Kmb.convertHkscs(item[`Desc_${column_suffix}` as keyof typeof item])
                 )
             )
         );

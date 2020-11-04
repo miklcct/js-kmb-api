@@ -73,4 +73,8 @@ export class KmbTest extends TestCase {
     @test toTitleCase([input, expected] : [string, string]) : void {
         assert.strictEqual(Kmb.toTitleCase(input), expected);
     }
+
+    @test convertHkscs() : void {
+        assert.strictEqual(Kmb.convertHkscs('深水北河街'), '深水埗北河街');
+    }
 }

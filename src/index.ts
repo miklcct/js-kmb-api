@@ -322,7 +322,7 @@ export default class Kmb {
                         this
                         , Number(item.ServiceType)
                         , Kmb.toTitleCase(
-                            hkscsConverter.convertString(
+                            Kmb.convertHkscs(
                                 item[
                                     {
                                         'en' : 'Origin_ENG',
@@ -333,7 +333,7 @@ export default class Kmb {
                             )
                         )
                         , Kmb.toTitleCase(
-                            hkscsConverter.convertString(
+                            Kmb.convertHkscs(
                                 item[
                                     {
                                         'en' : 'Destination_ENG',
@@ -343,7 +343,7 @@ export default class Kmb {
                                 ]
                             )
                         )
-                        , hkscsConverter.convertString(
+                        , Kmb.convertHkscs(
                             item[
                                 {
                                     'en' : 'Desc_ENG',
@@ -412,7 +412,7 @@ export default class Kmb {
                         new kmb.Stop(
                             item.BSICode
                             , Kmb.toTitleCase(
-                                hkscsConverter.convertString(
+                                Kmb.convertHkscs(
                                     item[
                                         {
                                             'en' : 'EName',
@@ -553,7 +553,7 @@ export default class Kmb {
                                         // the time is more than 6 hours in the future - assume midnight rollover
                                         time.setDate(time.getDate() - 1);
                                     }
-                                    return new kmb.Eta(this, time, obj.distance, hkscsConverter.convertString(obj.remark), obj.real_time);
+                                    return new kmb.Eta(this, time, obj.distance, Kmb.convertHkscs(obj.remark), obj.real_time);
                                 }
                             )
                     , reason => {
@@ -628,6 +628,14 @@ export default class Kmb {
             /((^|[^a-z0-9'])+)(.)/g
             , (match, p1 : string, p2 : string, p3 : string) => p1 + p3.toUpperCase()
         );
+    }
+
+    public static convertHkscs(string : string) : string {
+        try {
+            return hkscsConverter.convertString(string);
+        } catch (e) {
+            return string;
+        }
     }
 
     private static readonly httpsAgent = (

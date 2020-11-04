@@ -1,3 +1,6 @@
+## [3.2.0] (2020-11-04)
+* Expose HKSCS handling as a new function `Kmb.convertHkscs` which currently works on Node but does nothing on browser
+
 ## [3.1.0] (2020-11-04)
 * Handle HKSCS characters
 
