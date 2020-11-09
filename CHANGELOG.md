@@ -1,3 +1,6 @@
+## [3.2.2] (2020-11-09)
+* handle invalid data
+
 ## [3.2.1] (2020-11-04)
 * Replace HKSCS converter library which works in browser as well
 

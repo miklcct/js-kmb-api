@@ -479,8 +479,12 @@ export default class Kmb {
                         {params : query, responseType : 'json', httpsAgent : Kmb.httpsAgent}
                     );
                 return promise.then(
-                    ({data : json} : {data : [{eta : EtaData[]}?]}) =>
-                        (json[0]?.eta ?? [])
+                    ({data : json} : {data : [{eta : EtaData[]}?]}) => {
+                        if (json[0] === undefined) {
+                            throw new Error("Response does not contain ETA data");
+                        }
+                        return json[0]?.eta;
+                    }
                 );
             }
 
@@ -517,7 +521,12 @@ export default class Kmb {
                     }).toString()
                     , {responseType : 'json', httpsAgent : Kmb.httpsAgent, headers : {Origin : 'https://search.kmb.hk'}}
                 ).then(
-                    ({data : json} : {data : {data : {response : EtaData[]}}}) => json.data.response ?? []
+                    ({data : json} : {data : {data : {response? : EtaData[]}}}) => {
+                        if (json.data.response === undefined) {
+                            throw new Error("Response does not contain ETA data");
+                        }
+                        return json.data.response;
+                    }
                 );
             }
 
