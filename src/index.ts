@@ -188,7 +188,7 @@ export default class Kmb {
                                                         (await route.getVariants()).map(
                                                             async variant => (await variant.getStoppings()).filter(
                                                                 ({stop : inner_stop}) =>
-                                                                    inner_stop.id === this.id
+                                                                    JSON.stringify(inner_stop.id.split("-").slice(0, 2)) === JSON.stringify(this.id.split("-").slice(0, 2))
                                                                     || initial_name !== undefined
                                                                     // some poles in the same bus terminus are missing words "Bus Terminus"
                                                                         && (inner_stop.streetDirection === 'T' || inner_stop.name === initial_name)
