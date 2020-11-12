@@ -19,13 +19,13 @@ export default class Secret {
         return vendor_id;
     })();
 
-    public static btoa = typeof btoa !== 'undefined' ? btoa : (
-        (b : string) => Buffer.from(b).toString('base64')
-    );
+    public static btoa(b : string) : string {
+        return typeof btoa !== 'undefined' ? btoa(b) : Buffer.from(b).toString('base64');
+    }
 
-    public static atob = typeof atob !== 'undefined' ? atob : (
-        (a : string) => Buffer.from(a, 'base64').toString()
-    );
+    public static atob(a : string) : string {
+        return typeof atob !== 'undefined' ? atob(a) : Buffer.from(a, 'base64').toString();
+    }
 
     private static xorByteArrays(a : Uint8Array, b : Uint8Array) : Uint8Array {
         const result = [];

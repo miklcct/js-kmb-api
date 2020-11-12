@@ -526,8 +526,7 @@ export default class Kmb {
                 );
             }
 
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            async getEtas(retry_count = 5, fetcher : (this : Stopping) => Promise<EtaData[]> = this.callMobileEtaApi) : Promise<Eta[]> {
+            async getEtas(retry_count = 5, fetcher : () => Promise<EtaData[]> = this.callMobileEtaApi.bind(this)) : Promise<Eta[]> {
                 const promise = fetcher.call(this);
                 return promise.then(
                     (response : EtaData[]) =>

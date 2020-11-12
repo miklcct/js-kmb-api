@@ -1,5 +1,9 @@
+## [3.2.4] (2020-11-12)
+* fix secret handling function binding problems
+
 ## [3.2.3] (2020-11-12)
 * fix mobile ETA API
+* use mobule API as default
 
 ## [3.2.2] (2020-11-09)
 * handle invalid data
