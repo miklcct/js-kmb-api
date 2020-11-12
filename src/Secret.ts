@@ -18,6 +18,33 @@ export default class Secret {
         }
         return vendor_id;
     })();
-    private static readonly KEY = aesjs.utils.hex.toBytes('801C26C9AFB352FA4DF8C009BAB0FA72');
+
+    public static btoa = typeof btoa !== 'undefined' ? btoa : (
+        (b : string) => Buffer.from(b).toString('base64')
+    );
+
+    public static atob = typeof atob !== 'undefined' ? atob : (
+        (a : string) => Buffer.from(a, 'base64').toString()
+    );
+
+    private static xorByteArrays(a : Uint8Array, b : Uint8Array) : Uint8Array {
+        const result = [];
+        for (let i = 0; i < a.length; ++i) {
+            result[i] = a[i] ^ b[i % b.length];
+        }
+        return new Uint8Array(result);
+    }
+
+    private static encodeString(base64String : string, page : string) : string {
+        return aesjs.utils.utf8.fromBytes(Secret.xorByteArrays(aesjs.utils.utf8.toBytes(Secret.atob(base64String)), aesjs.utils.utf8.toBytes(page)));
+    }
+
+    private static readonly SECRET_STRING =
+        Secret.encodeString('CCNzfiQsIDQ8MQ==', 'KMBMainView')
+        + Secret.encodeString('ES4YfCcoJwUKEzN4', 'KMBMainView')
+        + Secret.encodeString('fnwbCDQfJxMaFS4=', 'KMBMainView')
+        + Secret.encodeString('ej0GBw0jCxJaXUo=', 'KMBMainView');
+
+    private static readonly KEY = aesjs.utils.hex.toBytes(Secret.encodeString(Secret.SECRET_STRING, 'KMBSplashScreen'));
 }
 

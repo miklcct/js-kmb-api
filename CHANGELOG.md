@@ -1,3 +1,6 @@
+## [3.2.3] (2020-11-12)
+* fix mobile ETA API
+
 ## [3.2.2] (2020-11-09)
 * handle invalid data
 

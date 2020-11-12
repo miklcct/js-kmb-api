@@ -493,11 +493,7 @@ export default class Kmb {
                 const date_string = `${current_date.getUTCFullYear()}-${(`00${current_date.getUTCMonth() + 1}`).slice(-2)}-${(`00${current_date.getUTCDate()}`).slice(-2)} ${(`00${current_date.getUTCHours()}`).slice(-2)}:${(`00${current_date.getUTCMinutes()}`).slice(-2)}:${(`00${current_date.getUTCSeconds()}`).slice(-2)}.${(`00${current_date.getUTCMilliseconds()}`).slice(-2)}.`;
                 const sep = `--31${date_string}13--`;
                 const token = `E${
-                    (
-                        typeof btoa !== 'undefined' ? btoa : (
-                            (b : string) => Buffer.from(b).toString('base64')
-                        )
-                    )(
+                    Secret.btoa(
                         this.variant.route.number
                         + sep
                         + String(this.variant.route.bound)
@@ -531,7 +527,7 @@ export default class Kmb {
             }
 
             // eslint-disable-next-line @typescript-eslint/unbound-method
-            async getEtas(retry_count = 5, fetcher : (this : Stopping) => Promise<EtaData[]> = this.callWebEtaApi) : Promise<Eta[]> {
+            async getEtas(retry_count = 5, fetcher : (this : Stopping) => Promise<EtaData[]> = this.callMobileEtaApi) : Promise<Eta[]> {
                 const promise = fetcher.call(this);
                 return promise.then(
                     (response : EtaData[]) =>
