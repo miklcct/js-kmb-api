@@ -640,7 +640,7 @@ export default class Kmb {
         () => {
             // rootCas has a caveat that it will automatically add certs into the global agent, labelled "backwards compat"
             // in the source code. I don't want this behaviour happening here
-            if (https.globalAgent !== undefined) {
+            if (https.globalAgent?.options !== undefined) {
                 const original = https.globalAgent.options.ca;
                 const result = new https.Agent(
                     {

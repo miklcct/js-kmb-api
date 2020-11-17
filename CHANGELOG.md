@@ -1,3 +1,6 @@
+## [3.2.5] (2020-11-17)
+* fix undefined TypeError when loading cert
+
 ## [3.2.4] (2020-11-12)
 * fix secret handling function binding problems
 
